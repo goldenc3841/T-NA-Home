@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    :root {
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --bg: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      --success: #10b981;
+    }
+
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    h2 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.025em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    input {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: var(--text);
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-danger {
+      background: #ef4444;
+    }
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      margin-top: 4px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .shortcut {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div>
+      <h2>TNA Evaluator</h2>
+      <p>Click-to-Capture Evaluation Overlay</p>
+    </div>
+
+    <!-- Configuration Mode (Logged Out) -->
+    <div id="auth-panel" class="card">
+      <div class="form-group">
+        <label for="platform-url">Platform URL</label>
+        <input type="text" id="platform-url" value="http://localhost:3000" placeholder="http://localhost:3000">
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="evaluator@tna.com">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••">
+      </div>
+      <button id="login-btn" style="width: 100%; margin-top: 8px;">Log In</button>
+      <div id="login-error" style="color: #ef4444; font-size: 11px; margin-top: 6px; text-align: center;" class="hidden"></div>
+    </div>
+
+    <!-- Active Mode (Logged In) -->
+    <div id="active-panel" class="card hidden">
+      <div class="profile-info">
+        <label>Active Evaluator</label>
+        <div style="font-weight: 600;" id="user-name">-</div>
+        <div id="user-role" class="status-badge">Evaluator</div>
+      </div>
+      
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+        <button id="activate-btn" style="width: 100%;">
+          ⚡ Start Capture Overlay
+        </button>
+        <button id="logout-btn" class="btn-secondary" style="width: 100%;">
+          Log Out
+        </button>
+      </div>
+    </div>
+
+    <div class="shortcut">
+      Shortcut: <kbd style="background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 3px;">Cmd+Shift+E</kbd>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

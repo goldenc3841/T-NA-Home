@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Next.js outputs (in case of root builds)
+.next/
+out/
+
+# Environment files (NEVER commit secrets!)
+.env
+.env.local
+.env.*.local
+
+# OS metadata
+.DS_Store
+Thumbs.db
+*.log
