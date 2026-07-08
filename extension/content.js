@@ -481,19 +481,65 @@
   // API Operations
   // ==========================================
 
+  // Helper to perform API requests to TNA Home with auth headers and error handling
+  async function apiFetch(endpoint, options = {}) {
+    const url = `${platformUrl}${endpoint}`;
+    const headers = {
+      "Authorization": `Bearer ${authToken}`,
+      ...options.headers
+    };
+    
+    let res;
+    try {
+      res = await fetch(url, { ...options, headers });
+    } catch (netErr) {
+      const err = new Error(`Failed to connect to TNA Home. Please verify that the server is running at ${platformUrl}.`);
+      err.isNetworkError = true;
+      throw err;
+    }
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const errMsg = errorData.error || `HTTP error ${res.status}`;
+      const err = new Error(errMsg);
+      err.status = res.status;
+      
+      // Auto-logout if the session is expired or invalid
+      if (res.status === 401 || res.status === 400) {
+        const lowercaseErr = errMsg.toLowerCase();
+        if (
+          lowercaseErr.includes("jwt") || 
+          lowercaseErr.includes("expired") || 
+          lowercaseErr.includes("token") || 
+          lowercaseErr.includes("unauthorized") || 
+          lowercaseErr.includes("invalid") ||
+          lowercaseErr.includes("signature")
+        ) {
+          err.isAuthError = true;
+          await chrome.storage.local.remove(["authToken", "userProfile"]);
+          authToken = null;
+          
+          removeOverlay();
+          alert("Your session has expired or is invalid. Please log in again via the extension popup.");
+        }
+      }
+      throw err;
+    }
+
+    return await res.json();
+  }
+
   async function fetchCompanies() {
     try {
-      const res = await fetch(`${platformUrl}/api/companies`, {
-        headers: { "Authorization": `Bearer ${authToken}` }
-      });
-      if (!res.ok) throw new Error();
-      companies = await res.json();
+      companies = await apiFetch("/api/companies");
       
       const select = shadowRoot.getElementById("tna-company-select");
       select.innerHTML = '<option value="">Select Company...</option>' + 
         companies.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
     } catch (err) {
-      alert("Failed to load companies from TNA Home. Verify that server is running.");
+      if (!err.isAuthError) {
+        alert(err.message || "Failed to load companies from TNA Home.");
+      }
     }
   }
 
@@ -518,15 +564,15 @@
     }
 
     try {
-      const res = await fetch(`${platformUrl}/api/companies/${selectedCompanyId}/features`, {
-        headers: { "Authorization": `Bearer ${authToken}` }
-      });
-      features = await res.json();
+      features = await apiFetch(`/api/companies/${selectedCompanyId}/features`);
       featureSelect.innerHTML = '<option value="">Select Feature...</option>' + 
         features.map(f => `<option value="${f.id}">${f.name}</option>`).join("");
       featureSelect.disabled = false;
     } catch (err) {
       console.error("Error loading features:", err);
+      if (!err.isAuthError) {
+        alert(err.message || "Failed to load features from TNA Home.");
+      }
     }
     validateForm();
   }
@@ -549,26 +595,28 @@
 
     try {
       // 1. Load active rubric version for this feature
-      const rubricRes = await fetch(`${platformUrl}/api/features/${selectedFeatureId}/active-rubric`, {
-        headers: { "Authorization": `Bearer ${authToken}` }
-      });
-      if (rubricRes.ok) {
-        activeRubricVersion = await rubricRes.json();
+      try {
+        activeRubricVersion = await apiFetch(`/api/features/${selectedFeatureId}/active-rubric`);
         renderRubricFields();
+      } catch (rubricErr) {
+        if (rubricErr.status === 404) {
+          activeRubricVersion = null;
+          renderRubricFields();
+        } else {
+          throw rubricErr;
+        }
       }
 
       // 2. Load active sessions for this feature to support multi-turn appending
-      const sessionsRes = await fetch(`${platformUrl}/api/features/${selectedFeatureId}/sessions`, {
-        headers: { "Authorization": `Bearer ${authToken}` }
-      });
-      if (sessionsRes.ok) {
-        activeSessions = await sessionsRes.json();
-        sessionSelect.innerHTML = '<option value="new">Create New Session...</option>' +
-          activeSessions.map(s => `<option value="${s.id}">${s.name} (Turns: ${s.turns_count})</option>`).join("");
-        sessionSelect.disabled = false;
-      }
+      activeSessions = await apiFetch(`/api/features/${selectedFeatureId}/sessions`);
+      sessionSelect.innerHTML = '<option value="new">Create New Session...</option>' +
+        activeSessions.map(s => `<option value="${s.id}">${s.name} (Turns: ${s.turns_count})</option>`).join("");
+      sessionSelect.disabled = false;
     } catch (err) {
       console.error("Error loading active rubric/sessions:", err);
+      if (!err.isAuthError) {
+        alert(err.message || "Failed to load active rubric/sessions from TNA Home.");
+      }
     }
     
     handleSessionChange({ target: { value: selectedSessionId } });
@@ -841,21 +889,14 @@
     };
 
     try {
-      const res = await fetch(`${platformUrl}/api/evaluations`, {
+      const result = await apiFetch('/api/evaluations', {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${res.status}`);
-      }
-
-      const result = await res.json();
       showToast("Evaluation Saved Successfully!");
       
       // Reset prompt and response fields for next evaluation
@@ -879,7 +920,9 @@
         }, 100);
       }
     } catch (err) {
-      alert("Submission failed: " + err.message);
+      if (!err.isAuthError) {
+        alert("Submission failed: " + err.message);
+      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Submit Evaluation";
