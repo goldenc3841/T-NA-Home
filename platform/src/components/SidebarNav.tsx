@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { 
   LayoutDashboard, 
-  Settings, 
   Building, 
   LogOut, 
   User 
@@ -28,12 +27,7 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
       icon: LayoutDashboard
     },
     {
-      name: "Rubrics Builder",
-      href: "/dashboard/rubrics",
-      icon: Settings
-    },
-    {
-      name: "Companies & Features",
+      name: "Clients",
       href: "/dashboard/companies",
       icon: Building
     }

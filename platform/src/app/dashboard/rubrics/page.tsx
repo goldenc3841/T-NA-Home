@@ -485,8 +485,8 @@ export default function RubricsPage() {
                             </span>
                           </div>
                           <div className="text-[10px] text-slate-400">{c.description || "No guidelines."}</div>
-                          {c.field_type === "rating" && (
-                            <div className="text-[9px] text-slate-500">Range: {c.field_options?.min || 1} to {c.field_options?.max || 5}</div>
+                          {c.field_type === "rating" && c.field_options && !Array.isArray(c.field_options) && (
+                            <div className="text-[9px] text-slate-500">Range: {c.field_options.min || 1} to {c.field_options.max || 5}</div>
                           )}
                           {c.field_type === "select" && (
                             <div className="text-[9px] text-slate-500">Options: {Array.isArray(c.field_options) ? c.field_options.join(", ") : "None"}</div>

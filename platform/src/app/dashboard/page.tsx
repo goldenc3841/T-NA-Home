@@ -2,18 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 import { 
-  LayoutDashboard, 
   Building, 
-  MessageSquare, 
   Layers, 
-  User, 
+  Clock, 
+  Folder, 
+  ChevronRight, 
+  ChevronDown, 
+  X,
   ExternalLink,
-  ChevronRight,
-  TrendingUp,
-  Activity,
-  FileText,
-  Clock
+  Sparkles
 } from "lucide-react";
 
 interface Company {
@@ -65,379 +64,428 @@ interface EvaluationSession {
   }>;
 }
 
-interface AggregateMetric {
-  name: string;
-  type: string;
-  count: number;
-  value: string;
-  rawPct?: number;
-}
-
 export default function DashboardPage() {
   const supabase = createClient();
 
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
+  const [profile, setProfile] = useState<{ full_name: string } | null>(null);
   const [sessions, setSessions] = useState<EvaluationSession[]>([]);
-  const [selectedSession, setSelectedSession] = useState<EvaluationSession | null>(null);
-  
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalSessions: 0,
-    totalTurns: 0,
-  });
+  const [expandedFeatures, setExpandedFeatures] = useState<Record<string, boolean>>({});
+  const [inspectedSession, setInspectedSession] = useState<EvaluationSession | null>(null);
 
-  const [aggregates, setAggregates] = useState<AggregateMetric[]>([]);
-
-  async function fetchCompanies() {
-    const { data } = await supabase
-      .from("companies")
-      .select("id, name")
-      .order("name", { ascending: true });
-    setCompanies(data || []);
+  async function fetchProfile() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .single();
+        setProfile(data);
+      }
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+    }
   }
 
-  async function fetchDashboardData(companyId: string) {
+  async function fetchDashboardData() {
     setIsLoading(true);
     try {
-      const url = companyId 
-        ? `/api/evaluations?company_id=${companyId}` 
-        : "/api/evaluations";
-      
-      const res = await fetch(url);
+      const res = await fetch("/api/evaluations");
       if (!res.ok) throw new Error();
       const data: EvaluationSession[] = await res.json();
-      
       setSessions(data || []);
-      computeStatsAndAnalytics(data || []);
-      
-      // Auto-select the first session if available
-      if (data && data.length > 0) {
-        setSelectedSession(data[0]);
-      } else {
-        setSelectedSession(null);
-      }
     } catch (err) {
       console.error("Error loading dashboard data:", err);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const computeStatsAndAnalytics = (sessionList: EvaluationSession[]) => {
-    const totalSessions = sessionList.length;
-    let totalTurns = 0;
-
-    // We want to calculate aggregates by rubric criteria.
-    // Map criteria name -> list of score values (to compute averages or distributions)
-    const criteriaTracker: Record<string, { type: string; values: string[] }> = {};
-
-    sessionList.forEach(s => {
-      totalTurns += s.turns?.length || 0;
-      s.turns?.forEach(t => {
-        t.scores?.forEach(sc => {
-          const critName = sc.criterion.name;
-          const critType = sc.criterion.field_type;
-          
-          if (!criteriaTracker[critName]) {
-            criteriaTracker[critName] = { type: critType, values: [] };
-          }
-          criteriaTracker[critName].values.push(sc.value);
-        });
-      });
-    });
-
-    const parsedAggregates = Object.entries(criteriaTracker).map(([name, tracker]) => {
-      if (tracker.type === "rating") {
-        const numericValues = tracker.values.map(v => parseFloat(v)).filter(v => !isNaN(v));
-        const avg = numericValues.length > 0 
-          ? numericValues.reduce((sum, curr) => sum + curr, 0) / numericValues.length 
-          : 0;
-        return {
-          name,
-          type: "rating",
-          count: numericValues.length,
-          value: avg.toFixed(2),
-        };
-      } else if (tracker.type === "boolean") {
-        const passCount = tracker.values.filter(v => v === "Pass").length;
-        const total = tracker.values.length;
-        const passRate = total > 0 ? (passCount / total) * 100 : 0;
-        return {
-          name,
-          type: "boolean",
-          count: total,
-          value: `${passRate.toFixed(0)}% Pass`,
-          rawPct: passRate,
-        };
-      } else if (tracker.type === "select") {
-        // Find the frequency of each value
-        const frequencies: Record<string, number> = {};
-        tracker.values.forEach(v => {
-          frequencies[v] = (frequencies[v] || 0) + 1;
-        });
-        const total = tracker.values.length;
-        
-        // Find most frequent option
-        let maxOption = "N/A";
-        let maxPct = 0;
-        
-        if (total > 0) {
-          const sortedFreq = Object.entries(frequencies).sort((a, b) => b[1] - a[1]);
-          maxOption = sortedFreq[0][0];
-          maxPct = (sortedFreq[0][1] / total) * 100;
-        }
-
-        return {
-          name,
-          type: "select",
-          count: total,
-          value: `${maxOption} (${maxPct.toFixed(0)}%)`,
-        };
-      } else {
-        return {
-          name,
-          type: "text",
-          count: tracker.values.length,
-          value: `${tracker.values.length} comments`,
-        };
-      }
-    });
-
-    setStats({ totalSessions, totalTurns });
-    setAggregates(parsedAggregates);
-  };
+  }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchCompanies();
+    fetchProfile();
+    fetchDashboardData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchDashboardData(selectedCompanyId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCompanyId]);
+  // Helper to format relative time (e.g. 3m, 2hr, 1d)
+  function formatRelativeTime(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    
+    const diffMins = Math.max(0, Math.floor(diffMs / (1000 * 60)));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffMins < 60) {
+      return `${diffMins}m`;
+    } else if (diffHours < 24) {
+      return `${diffHours}hr`;
+    } else {
+      return `${diffDays}d`;
+    }
+  }
+
+  // Helper to format exact date (e.g., July 17, 2026)
+  function formatExactDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    });
+  }
+
+  // Find unique recently evaluated companies sorted by their max updated_at date
+  const seenCompanies = new Set<string>();
+  const recentCompanies: Array<{ id: string; name: string; lastActivity: string }> = [];
+  
+  sessions.forEach((s) => {
+    const company = s.feature?.company;
+    if (company && !seenCompanies.has(company.id)) {
+      seenCompanies.add(company.id);
+      recentCompanies.push({
+        id: company.id,
+        name: company.name,
+        lastActivity: s.updated_at
+      });
+    }
+  });
+
+  // Group sessions by feature
+  interface GroupedFeatureRow {
+    featureId: string;
+    featureName: string;
+    companyId: string;
+    companyName: string;
+    lastActivity: string;
+    sessions: Array<{ id: string; name: string; updated_at: string }>;
+  }
+
+  const groupedFeaturesMap: Record<string, GroupedFeatureRow> = {};
+  sessions.forEach((s) => {
+    const feat = s.feature;
+    if (!feat) return;
+
+    if (!groupedFeaturesMap[feat.id]) {
+      groupedFeaturesMap[feat.id] = {
+        featureId: feat.id,
+        featureName: feat.name,
+        companyId: feat.company.id,
+        companyName: feat.company.name,
+        lastActivity: s.updated_at,
+        sessions: []
+      };
+    }
+
+    if (groupedFeaturesMap[feat.id].sessions.length < 3) {
+      groupedFeaturesMap[feat.id].sessions.push({
+        id: s.id,
+        name: s.name,
+        updated_at: s.updated_at
+      });
+    }
+  });
+
+  const recentFeatures = Object.values(groupedFeaturesMap).sort((a, b) => 
+    new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime()
+  );
+
+  const toggleFeatureExpand = (featureId: string) => {
+    setExpandedFeatures(prev => ({
+      ...prev,
+      [featureId]: !prev[featureId]
+    }));
+  };
+
+  const scrollLeft = () => {
+    const el = document.getElementById("recent-companies-scroll");
+    if (el) el.scrollBy({ left: -240, behavior: "smooth" });
+  };
+
+  const scrollRight = () => {
+    const el = document.getElementById("recent-companies-scroll");
+    if (el) el.scrollBy({ left: 240, behavior: "smooth" });
+  };
 
   return (
-    <div className="space-y-8">
-      {/* Upper Navigation Row / Filters */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <LayoutDashboard className="h-7 w-7 text-violet-500" />
-            Evaluations Dashboard
+    <div className="space-y-8 max-w-5xl mx-auto py-2">
+      {/* Welcome Banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-900/40 via-indigo-900/30 to-slate-900/40 border border-white/5 p-6 md:p-8">
+        <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
+          <Sparkles className="h-24 w-24 text-violet-400" />
+        </div>
+        <div className="relative z-10 space-y-1">
+          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
+            Welcome, <span className="bg-gradient-to-r from-violet-400 to-indigo-300 bg-clip-text text-transparent">{profile?.full_name || "Evaluator"}</span>
           </h1>
-          <p className="text-slate-400 mt-1 text-sm">
-            Analyze prompt response metrics, aggregate criteria trends, and drill down into conversations.
-          </p>
-        </div>
-
-        {/* Company Switcher */}
-        <div className="flex items-center gap-2 shrink-0">
-          <Building className="h-4.5 w-4.5 text-slate-400" />
-          <select
-            value={selectedCompanyId}
-            onChange={(e) => setSelectedCompanyId(e.target.value)}
-            className="bg-slate-900/60 border border-white/5 rounded-lg px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-violet-500"
-          >
-            <option value="">All Client Companies</option>
-            {companies.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
         </div>
       </div>
 
-      {/* Grid Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-        <div className="glass-card rounded-xl border border-white/5 p-5 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 shrink-0">
-            <Layers className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Sessions Captured</div>
-            <div className="text-2xl font-black text-white mt-1">{stats.totalSessions}</div>
-          </div>
-        </div>
-
-        <div className="glass-card rounded-xl border border-white/5 p-5 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
-            <MessageSquare className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Total Turns Logged</div>
-            <div className="text-2xl font-black text-white mt-1">{stats.totalTurns}</div>
-          </div>
-        </div>
-
-        <div className="glass-card rounded-xl border border-white/5 p-5 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-            <TrendingUp className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Average Turn Ratio</div>
-            <div className="text-2xl font-black text-white mt-1">
-              {stats.totalSessions > 0 ? (stats.totalTurns / stats.totalSessions).toFixed(1) : 0}
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-card rounded-xl border border-white/5 p-5 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 shrink-0">
-            <Activity className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Active Rubrics</div>
-            <div className="text-2xl font-black text-white mt-1">1</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Aggregate Metric Analytics */}
-      <div className="glass-card rounded-xl border border-white/5 p-6 space-y-4">
-        <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-          <TrendingUp className="h-4.5 w-4.5 text-violet-400" />
-          Quality Trend Summaries (Across Captured Dialogues)
+      {/* Section: Recently Evaluated Companies */}
+      <div className="space-y-3">
+        <h2 className="text-xs uppercase font-bold tracking-widest text-slate-400 flex items-center gap-2">
+          <Building className="h-3.5 w-3.5 text-violet-400" />
+          Recently Evaluated Companies
         </h2>
 
-        {aggregates.length === 0 ? (
-          <div className="text-slate-500 text-xs py-4 text-center">No evaluations captured to generate trends. Load the extension to begin.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {aggregates.map((agg, idx) => (
-              <div key={idx} className="bg-slate-900/30 border border-white/5 rounded-lg p-4 space-y-2">
-                <div className="text-xs font-semibold text-slate-300 truncate">{agg.name}</div>
-                <div className="flex items-baseline justify-between">
-                  <div className="text-xl font-extrabold text-violet-400">{agg.value}</div>
-                  <span className="text-[9px] text-slate-500 uppercase font-medium">{agg.type}</span>
-                </div>
-                {/* Visual meter */}
-                <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-violet-500 rounded-full" 
-                    style={{
-                      width: agg.type === "rating" 
-                        ? `${(parseFloat(agg.value) / 5) * 100}%` 
-                        : agg.type === "boolean" 
-                          ? `${agg.rawPct}%` 
-                          : "100%"
-                    }}
-                  />
-                </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="glass-card h-28 rounded-xl border border-white/5 p-4 animate-pulse flex flex-col justify-between">
+                <div className="h-4 bg-slate-800 rounded w-2/3" />
+                <div className="h-3 bg-slate-800 rounded w-1/2" />
               </div>
             ))}
+          </div>
+        ) : recentCompanies.length === 0 ? (
+          <div className="glass-card rounded-xl border border-white/5 p-6 text-center text-slate-500 text-xs">
+            No evaluated companies yet. Perform evaluations with the Chrome extension to see them here.
+          </div>
+        ) : (
+          <div className="relative group">
+            {/* Scroll Navigation Arrows */}
+            <button
+              onClick={scrollLeft}
+              className="absolute -left-4 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-slate-900/90 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 hover:border-violet-500/30 transition-all opacity-0 group-hover:opacity-100 z-10 cursor-pointer shadow-lg animate-in fade-in"
+            >
+              <ChevronRight className="h-4 w-4 rotate-180" />
+            </button>
+            <button
+              onClick={scrollRight}
+              className="absolute -right-4 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-slate-900/90 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 hover:border-violet-500/30 transition-all opacity-0 group-hover:opacity-100 z-10 cursor-pointer shadow-lg animate-in fade-in"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+
+            {/* Pills Container */}
+            <div
+              id="recent-companies-scroll"
+              className="flex gap-4 overflow-x-auto pb-3 pt-1 px-1 scroll-smooth no-scrollbar"
+            >
+              {recentCompanies.map((company) => (
+                <Link
+                  key={company.id}
+                  href={`/dashboard/companies/${company.id}`}
+                  className="glass-card flex-none w-56 rounded-xl border border-white/5 p-4 hover:border-violet-500/40 hover:bg-violet-600/[0.03] transition-all duration-300 group/pill"
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="min-w-0">
+                      <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Client</div>
+                      <div className="text-sm font-bold text-slate-200 mt-0.5 truncate group-hover/pill:text-violet-400 transition-colors">
+                        {company.name}
+                      </div>
+                    </div>
+                    <div className="h-8 w-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-450 shrink-0">
+                      <Building className="h-4 w-4" />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <Clock className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Last Activity: <span className="font-semibold text-slate-300">{formatRelativeTime(company.lastActivity)}</span></span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Session Logs & Detail Drill-Down Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        
-        {/* Left Column: Sessions List */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="glass-card rounded-xl border border-white/5 p-5">
-            <h2 className="text-sm font-bold text-slate-200 mb-4 flex items-center gap-2 border-b border-white/5 pb-2.5">
-              <FileText className="h-4.5 w-4.5 text-violet-400" />
-              Evaluation Sessions Logs
-            </h2>
+      {/* Section: Recent Evaluation Sessions Tree */}
+      <div className="space-y-3">
+        <h2 className="text-xs uppercase font-bold tracking-widest text-slate-400 flex items-center gap-2">
+          <Layers className="h-3.5 w-3.5 text-violet-400" />
+          Recent Evaluation Sessions
+        </h2>
 
-            {isLoading ? (
-              <div className="text-slate-500 text-xs py-8 text-center">Loading sessions...</div>
-            ) : sessions.length === 0 ? (
-              <div className="text-slate-500 text-xs py-8 text-center">No sessions registered.</div>
-            ) : (
-              <div className="space-y-2 max-h-[550px] overflow-y-auto pr-1">
-                {sessions.map((s) => {
-                  const isSelected = selectedSession?.id === s.id;
-                  return (
-                    <div
-                      key={s.id}
-                      onClick={() => setSelectedSession(s)}
-                      className={`p-3 rounded-lg border cursor-pointer transition-all text-xs flex justify-between items-start gap-4 ${
-                        isSelected
-                          ? "bg-violet-600/10 border-violet-500/30 text-violet-400"
-                          : "bg-slate-900/10 border-white/5 text-slate-400 hover:text-slate-200 hover:bg-white/5"
-                      }`}
+        {isLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="glass-card h-14 rounded-xl border border-white/5 p-4 animate-pulse flex items-center justify-between">
+                <div className="h-4 bg-slate-800 rounded w-1/3" />
+                <div className="h-4 bg-slate-800 rounded w-12" />
+              </div>
+            ))}
+          </div>
+        ) : recentFeatures.length === 0 ? (
+          <div className="glass-card rounded-xl border border-white/5 p-8 text-center text-slate-500 text-xs">
+            No evaluation sessions captured yet.
+          </div>
+        ) : (
+          <div className="glass-card rounded-xl border border-white/5 overflow-hidden">
+            <div className="divide-y divide-white/5">
+              {recentFeatures.map((row) => {
+                const isExpanded = !!expandedFeatures[row.featureId];
+                return (
+                  <div key={row.featureId} className="p-4 transition-colors hover:bg-white/[0.01]">
+                    {/* Feature Row Header */}
+                    <div 
+                      onClick={() => toggleFeatureExpand(row.featureId)}
+                      className="flex items-center justify-between gap-4 cursor-pointer group/row"
                     >
-                      <div className="min-w-0 space-y-1">
-                        <div className="font-semibold text-slate-200 truncate">{s.name}</div>
-                        <div className="text-[10px] text-slate-400 truncate flex items-center gap-1.5">
-                          <span>{s.feature.company.name}</span>
-                          <span>•</span>
-                          <span>{s.feature.name}</span>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-8 w-8 rounded-lg bg-slate-950 border border-white/5 flex items-center justify-center text-slate-400 group-hover/row:border-violet-500/30 group-hover/row:text-violet-450 transition-colors shrink-0">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
                         </div>
-                        <div className="text-[9px] text-slate-500 flex items-center gap-1">
-                          <Clock className="h-3 w-3 shrink-0" />
-                          {new Date(s.updated_at).toLocaleDateString()}
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Folder className="h-4 w-4 text-violet-500 shrink-0" />
+                          <span className="font-semibold text-xs md:text-sm text-slate-200 truncate group-hover/row:text-slate-100 transition-colors">
+                            {row.companyName}
+                          </span>
+                          <span className="text-slate-500 font-medium text-xs">•</span>
+                          <Link
+                            href={`/dashboard/companies/${row.companyId}/products/${row.featureId}`}
+                            className="text-xs md:text-sm text-slate-400 hover:text-violet-400 hover:underline truncate transition-colors cursor-pointer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {row.featureName}
+                          </Link>
                         </div>
                       </div>
-                      <div className="shrink-0 flex flex-col items-end gap-1">
-                        <span className="px-2 py-0.5 rounded bg-slate-950 font-bold text-[9px] text-slate-400 border border-white/5">
-                          {s.turns?.length || 0} Turns
+                      
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-[10px] text-slate-500 font-bold bg-slate-950 px-2.5 py-1 rounded-md border border-white/5">
+                          {formatRelativeTime(row.lastActivity)}
                         </span>
-                        <ChevronRight className={`h-4 w-4 transition-transform ${isSelected ? "translate-x-1 text-violet-400" : "text-slate-500"}`} />
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Right Column: Session In Depth Inspector */}
-        <div className="lg:col-span-3">
-          {selectedSession ? (
-            <div className="glass-card rounded-xl border border-white/5 p-6 space-y-6">
-              {/* Header Details */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-white/5 gap-4">
-                <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    {selectedSession.name}
-                  </h2>
-                  <div className="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-2">
-                    <span className="font-semibold text-slate-300">{selectedSession.feature.company.name}</span>
-                    <span>•</span>
-                    <span>{selectedSession.feature.name}</span>
-                    <span>•</span>
-                    <span className="text-slate-500">Rubric: {selectedSession.rubric_version.rubric.title}</span>
+                    {/* Expandable Session Tree */}
+                    {isExpanded && (
+                      <div className="pl-6 mt-3 space-y-1 relative animate-in fade-in duration-200">
+                        {/* Vertical line connecting Feature to subfolders */}
+                        <div className="absolute left-3.5 top-0 bottom-4 w-px bg-slate-800" />
+                        
+                        {/* Subfolder header */}
+                        <div className="relative pl-8 py-1.5 flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                          {/* Horizontal connector to parent line */}
+                          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-px bg-slate-800" />
+                          <Folder className="h-3.5 w-3.5 text-slate-600 shrink-0" />
+                          <span>Evaluation Sessions</span>
+                        </div>
+                        
+                        {/* Nested sessions list */}
+                        <div className="pl-4 space-y-1 relative">
+                          {/* Vertical line for the sub-sessions */}
+                          <div className="absolute left-7.5 top-0 bottom-4 w-px bg-slate-800" />
+                          
+                          {row.sessions.map((session, sIdx) => {
+                            const isLastSession = sIdx === row.sessions.length - 1;
+                            return (
+                              <div 
+                                key={session.id}
+                                onClick={() => {
+                                  // Find the full evaluation session object
+                                  const fullSession = sessions.find(s => s.id === session.id);
+                                  if (fullSession) setInspectedSession(fullSession);
+                                }}
+                                className="relative pl-10 pr-3 py-1.5 rounded-lg hover:bg-white/5 transition-all cursor-pointer flex items-center justify-between text-xs text-slate-350 hover:text-white group/session"
+                              >
+                                {/* Vertical line segment */}
+                                <div className={`absolute left-7.5 top-0 w-px bg-slate-800 ${isLastSession ? "h-1/2" : "bottom-0"}`} />
+                                {/* Horizontal connector line */}
+                                <div className="absolute left-7.5 top-1/2 -translate-y-1/2 w-3.5 h-px bg-slate-800" />
+                                
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <Folder className="h-3.5 w-3.5 text-violet-400/80 group-hover/session:text-violet-450 shrink-0" />
+                                  <span className="truncate font-medium">{session.name}</span>
+                                  <span className="text-[10px] text-slate-500 font-normal">({formatExactDate(session.updated_at)})</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Drawer Overlay */}
+      {inspectedSession && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 animate-in fade-in duration-300"
+            onClick={() => setInspectedSession(null)}
+          />
+          {/* Slide-over Drawer */}
+          <div className="fixed inset-y-0 right-0 w-full max-w-2xl bg-slate-900/95 border-l border-white/10 z-50 shadow-2xl flex flex-col h-full overflow-hidden animate-in slide-in-from-right duration-300 ease-out">
+            {/* Drawer Header */}
+            <div className="p-6 border-b border-white/5 flex items-start justify-between gap-4 bg-slate-950/45">
+              <div>
+                <div className="text-[10px] uppercase font-bold tracking-widest text-violet-400">Evaluation Session Inspector</div>
+                <h2 className="text-xl font-extrabold text-white mt-1.5 flex items-center gap-2 leading-tight">
+                  {inspectedSession.name}
+                </h2>
+                <div className="text-xs text-slate-450 mt-2 flex flex-wrap items-center gap-1.5">
+                  <span className="font-semibold text-slate-350">{inspectedSession.feature.company.name}</span>
+                  <span>•</span>
+                  <span>{inspectedSession.feature.name}</span>
+                  <span>•</span>
+                  <span className="text-slate-500">Rubric: {inspectedSession.rubric_version.rubric.title}</span>
                 </div>
-                <div className="text-xs text-slate-400 shrink-0 space-y-0.5 flex flex-col md:items-end">
-                  <div className="flex items-center gap-1">
-                    <User className="h-3.5 w-3.5 text-violet-400" />
-                    <span>Evaluator: {selectedSession.evaluator?.full_name || "Unknown"}</span>
-                  </div>
-                  <div className="text-[10px] text-slate-500">
-                    Created: {new Date(selectedSession.created_at).toLocaleString()}
-                  </div>
+              </div>
+              
+              <button
+                onClick={() => setInspectedSession(null)}
+                className="h-8 w-8 rounded-lg border border-white/10 hover:border-white/20 flex items-center justify-center text-slate-450 hover:text-white hover:bg-white/5 transition-all cursor-pointer shrink-0"
+              >
+                <X className="h-4.5 w-4.5" />
+              </button>
+            </div>
+            
+            {/* Drawer Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Metadata Card */}
+              <div className="bg-slate-950/40 border border-white/5 rounded-xl p-4 space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Evaluator:</span>
+                  <span className="text-slate-300 font-semibold">{inspectedSession.evaluator?.full_name || "Unknown"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Created:</span>
+                  <span className="text-slate-350">{new Date(inspectedSession.created_at).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Last Modified:</span>
+                  <span className="text-slate-350">{new Date(inspectedSession.updated_at).toLocaleString()}</span>
                 </div>
               </div>
 
               {/* Turns Listing */}
               <div className="space-y-6">
-                <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
-                  Conversation Turns ({selectedSession.turns?.length || 0})
+                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-widest">
+                  Conversation Turns ({inspectedSession.turns?.length || 0})
                 </h3>
 
-                {(!selectedSession.turns || selectedSession.turns.length === 0) ? (
-                  <div className="text-slate-500 text-xs py-8 text-center">
+                {(!inspectedSession.turns || inspectedSession.turns.length === 0) ? (
+                  <div className="text-slate-500 text-xs py-8 text-center bg-slate-950/20 rounded-xl border border-dashed border-white/5">
                     No conversation turns captured under this session yet.
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {selectedSession.turns
+                    {inspectedSession.turns
                       .sort((a, b) => a.turn_number - b.turn_number)
                       .map((turn) => (
                         <div 
                           key={turn.id} 
-                          className="border border-white/5 rounded-xl bg-slate-900/10 overflow-hidden"
+                          className="border border-white/5 rounded-xl bg-slate-900/30 overflow-hidden"
                         >
                           {/* Turn Header */}
                           <div className="px-4 py-2 bg-slate-950 border-b border-white/5 flex items-center justify-between text-xs">
-                            <span className="font-semibold text-slate-300 flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-350 flex items-center gap-1.5">
                               <span className="h-4.5 w-4.5 rounded-full bg-violet-600/20 text-violet-400 border border-violet-500/30 flex items-center justify-center text-[10px] font-bold">
                                 {turn.turn_number}
                               </span>
@@ -448,7 +496,7 @@ export default function DashboardPage() {
                                 href={turn.source_url} 
                                 target="_blank" 
                                 rel="noreferrer" 
-                                className="text-[10px] text-slate-500 hover:text-violet-400 flex items-center gap-1 transition-colors"
+                                className="text-[10px] text-slate-500 hover:text-violet-450 flex items-center gap-1 transition-colors"
                               >
                                 <Clock className="h-3 w-3" />
                                 URL Source
@@ -460,7 +508,7 @@ export default function DashboardPage() {
                           {/* Turn Content (Prompt / Response) */}
                           <div className="p-4 space-y-4">
                             <div className="space-y-1">
-                              <span className="text-[9px] font-bold text-violet-400 uppercase tracking-wider block">Prompt</span>
+                              <span className="text-[9px] font-bold text-violet-450 uppercase tracking-wider block">Prompt</span>
                               <div className="bg-slate-950/60 rounded-lg p-3 text-xs text-slate-300 font-mono border border-white/5 whitespace-pre-wrap leading-relaxed">
                                 {turn.prompt}
                               </div>
@@ -475,46 +523,40 @@ export default function DashboardPage() {
                           </div>
 
                           {/* Scores List for this Turn */}
-                          <div className="border-t border-white/5 p-4 bg-slate-950/30 space-y-3">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Evaluator Scores</span>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {turn.scores?.map((score) => (
-                                <div 
-                                  key={score.id}
-                                  className="bg-slate-900/40 border border-white/5 rounded-lg p-3 space-y-1"
-                                >
-                                  <div className="flex justify-between items-center text-xs">
-                                    <span className="font-semibold text-slate-200">{score.criterion.name}</span>
-                                    <span className="px-2 py-0.5 rounded bg-violet-600/10 border border-violet-500/20 text-[10px] text-violet-400 font-bold">
-                                      {score.value}
-                                    </span>
-                                  </div>
-                                  {score.notes && (
-                                    <div className="text-[10px] text-slate-400 leading-relaxed italic bg-slate-950/30 px-2 py-1.5 rounded border border-white/5 mt-1.5">
-                                      &ldquo;{score.notes}&rdquo;
+                          {turn.scores && turn.scores.length > 0 && (
+                            <div className="border-t border-white/5 p-4 bg-slate-950/30 space-y-3">
+                              <span className="text-[9px] font-bold text-slate-450 uppercase tracking-wider block">Evaluator Scores</span>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {turn.scores.map((score) => (
+                                  <div 
+                                    key={score.id}
+                                    className="bg-slate-900/40 border border-white/5 rounded-lg p-3 space-y-1"
+                                  >
+                                    <div className="flex justify-between items-center text-xs">
+                                      <span className="font-semibold text-slate-350">{score.criterion.name}</span>
+                                      <span className="px-2 py-0.5 rounded bg-violet-600/10 border border-violet-500/20 text-[10px] text-violet-400 font-bold">
+                                        {score.value}
+                                      </span>
                                     </div>
-                                  )}
-                                </div>
-                              ))}
+                                    {score.notes && (
+                                      <div className="text-[10px] text-slate-450 leading-relaxed italic bg-slate-950/30 px-2 py-1.5 rounded border border-white/5 mt-1.5">
+                                        &ldquo;{score.notes}&rdquo;
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       ))}
                   </div>
                 )}
               </div>
             </div>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center p-8 bg-slate-900/20 border border-dashed border-white/5 rounded-xl text-center">
-              <MessageSquare className="h-8 w-8 text-slate-500 mb-2" />
-              <p className="text-slate-400 text-xs">
-                Select an evaluation session from the logs on the left to inspect its prompts, responses, and ratings.
-              </p>
-            </div>
-          )}
-        </div>
-
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
