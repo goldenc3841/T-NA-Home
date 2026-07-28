@@ -692,10 +692,6 @@
         <div class="criterion-name">${c.name}</div>
         <div class="criterion-desc">${c.description || ""}</div>
         <div style="margin-top: 4px;">${inputHtml}</div>
-        <div class="field-group" style="margin-top: 8px;">
-          <label style="font-size: 9px;">Criterion Notes (Optional)</label>
-          <input type="text" class="criterion-notes" placeholder="Why this score?">
-        </div>
       `;
 
       container.appendChild(card);
@@ -872,7 +868,7 @@
       scores.push({
         criterion_id: card.dataset.id,
         value: card.querySelector(".criterion-value").value,
-        notes: card.querySelector(".criterion-notes").value.trim()
+        notes: ""
       });
     });
 
