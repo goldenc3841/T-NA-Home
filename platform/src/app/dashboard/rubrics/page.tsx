@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { 
   Building, 
@@ -44,6 +45,8 @@ export default function RubricsPage() {
 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
+  const searchParams = useSearchParams();
+const companyIdFromUrl = searchParams.get("companyId");
   
   // Rubric info
   const [rubric, setRubric] = useState<Rubric | null>(null);
@@ -81,9 +84,13 @@ export default function RubricsPage() {
       .from("companies")
       .select("id, name")
       .order("name", { ascending: true });
-    setCompanies(data || []);
+  setCompanies(data || []);
     if (data && data.length > 0) {
-      setSelectedCompanyId(data[0].id);
+      if (companyIdFromUrl && data.some(c => c.id === companyIdFromUrl)) {
+        setSelectedCompanyId(companyIdFromUrl);
+      } else {
+        setSelectedCompanyId(data[0].id);
+      }
     }
     setIsLoading(false);
   }
