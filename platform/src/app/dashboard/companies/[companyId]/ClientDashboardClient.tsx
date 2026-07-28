@@ -510,9 +510,9 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                 {company?.name || "Client"} Rubrics
               </h2>
               <Link
-                href={`/dashboard/rubrics`}
-                className="px-3 py-1.5 rounded-lg bg-violet-600/15 border border-violet-500/20 text-violet-450 hover:bg-violet-600 hover:text-white transition-all text-[11px] font-bold cursor-pointer shrink-0"
-              >
+  href={`/dashboard/rubrics?companyId=${companyId}`}
+  className="text-[10px] font-extrabold text-violet-400 hover:text-violet-300 hover:underline transition-colors"
+>
                 + New
               </Link>
             </div>
@@ -554,7 +554,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                           </td>
                           <td className="p-3 text-right">
                             <Link
-                              href={`/dashboard/rubrics`}
+                              href={`/dashboard/rubrics?companyId=${companyId}`}
                               className="text-[10px] font-extrabold text-violet-400 hover:text-violet-300 hover:underline transition-colors"
                             >
                               {hasActive ? "View/Apply" : "Edit"}

@@ -298,7 +298,7 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
             Start New Evaluation
           </button>
           <Link
-            href={`/dashboard/rubrics`}
+            href={`/dashboard/rubrics?companyId=${companyId}`}
             className="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold border border-white/5 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="h-4 w-4" />
