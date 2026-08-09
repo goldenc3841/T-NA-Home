@@ -316,6 +316,17 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
     });
   });
 
+  // Find last activity for each rubric
+  const rubricLastActivity: Record<string, string> = {};
+  sessions.forEach((s) => {
+    const rId = s.rubric_version?.rubric?.id;
+    if (rId) {
+      if (!rubricLastActivity[rId] || new Date(s.updated_at).getTime() > new Date(rubricLastActivity[rId]).getTime()) {
+        rubricLastActivity[rId] = s.updated_at;
+      }
+    }
+  });
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto py-2">
       {/* Back button */}
@@ -510,7 +521,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                 {company?.name || "Client"} Rubrics
               </h2>
               <Link
-  href={`/dashboard/rubrics?companyId=${companyId}`}
+  href={`/dashboard/rubrics?companyId=${companyId}&rubricId=new`}
   className="text-[10px] font-extrabold text-violet-400 hover:text-violet-300 hover:underline transition-colors"
 >
                 + New
@@ -528,37 +539,32 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                     <tr className="bg-slate-950/65 border-b border-white/5 text-slate-500 uppercase tracking-widest text-[9px] font-bold">
                       <th className="p-3">ID</th>
                       <th className="p-3">Name</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3 text-right">Action</th>
+                      <th className="p-3 text-right">Last Activity</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {rubrics.map((rubric) => {
-                      const hasActive = rubric.rubric_versions?.some(v => v.is_active);
                       return (
-                        <tr key={rubric.id} className="hover:bg-white/[0.01] transition-colors text-slate-350">
+                        <tr 
+                          key={rubric.id} 
+                          onClick={() => router.push(`/dashboard/rubrics?companyId=${companyId}&rubricId=${rubric.id}`)}
+                          className="hover:bg-white/[0.02] active:bg-white/[0.04] transition-colors cursor-pointer group text-slate-350"
+                        >
                           <td className="p-3 font-mono text-[9px] text-slate-450">
                             {rubric.id.substring(0, 8)}
                           </td>
-                          <td className="p-3 font-bold text-slate-200 truncate max-w-[120px]" title={rubric.title}>
+                          <td className="p-3 font-bold text-slate-200 group-hover:text-violet-400 transition-colors truncate max-w-[120px]" title={rubric.title}>
                             {rubric.title}
                           </td>
-                          <td className="p-3">
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
-                              hasActive 
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                            }`}>
-                              {hasActive ? "Active" : "Draft"}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right">
-                            <Link
-                              href={`/dashboard/rubrics?companyId=${companyId}`}
-                              className="text-[10px] font-extrabold text-violet-400 hover:text-violet-300 hover:underline transition-colors"
-                            >
-                              {hasActive ? "View/Apply" : "Edit"}
-                            </Link>
+                          <td className="p-3 text-right text-slate-400">
+                            {rubricLastActivity[rubric.id] ? (
+                              <span className="inline-flex items-center gap-1.5 justify-end">
+                                <Clock className="h-3.5 w-3.5 text-slate-500" />
+                                {formatRelativeTime(rubricLastActivity[rubric.id])} ago
+                              </span>
+                            ) : (
+                              <span className="text-slate-500 italic text-[10px]">No activity</span>
+                            )}
                           </td>
                         </tr>
                       );

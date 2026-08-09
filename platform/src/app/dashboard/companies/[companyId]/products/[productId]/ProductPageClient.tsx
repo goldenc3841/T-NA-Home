@@ -323,10 +323,10 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
               <thead>
                 <tr className="bg-slate-950/65 border-b border-white/5 text-slate-500 uppercase tracking-widest text-[9px] font-bold">
                   <th className="p-4">ID</th>
+                  <th className="p-4">Session Name</th>
                   <th className="p-4">Rubric</th>
                   <th className="p-4">Created</th>
                   <th className="p-4">Last Activity</th>
-                  <th className="p-4">Status</th>
                   <th className="p-4 text-right">Action</th>
                 </tr>
               </thead>
@@ -341,6 +341,9 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
                       {session.id.substring(0, 8)}
                     </td>
                     <td className="p-4 font-bold text-slate-200">
+                      {session.name}
+                    </td>
+                    <td className="p-4 text-slate-400">
                       {session.rubric_version?.rubric?.title}
                     </td>
                     <td className="p-4 text-slate-400">
@@ -350,11 +353,6 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
                       <span className="flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5 text-slate-500" />
                         {formatRelativeTime(session.updated_at)} ago
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className="px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-450 font-bold uppercase tracking-wide text-[9px]">
-                        Completed
                       </span>
                     </td>
                     <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>

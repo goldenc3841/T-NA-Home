@@ -185,14 +185,15 @@ function CompaniesPageContent() {
                 {paginatedCompanies.map((c) => {
                   const lastActiveDate = lastActivity[c.id];
                   return (
-                    <tr key={c.id} className="hover:bg-white/[0.01] transition-colors">
+                    <tr 
+                      key={c.id} 
+                      onClick={() => router.push(`/dashboard/companies/${c.id}`)}
+                      className="hover:bg-white/[0.02] active:bg-white/[0.04] transition-colors cursor-pointer group"
+                    >
                       <td className="p-4">
-                        <Link
-                          href={`/dashboard/companies/${c.id}`}
-                          className="font-bold text-slate-200 hover:text-violet-400 hover:underline transition-all cursor-pointer text-left"
-                        >
+                        <span className="font-bold text-slate-200 group-hover:text-violet-400 transition-all text-left">
                           {c.name}
-                        </Link>
+                        </span>
                       </td>
                       <td className="p-4 text-slate-400">
                         {lastActiveDate ? (
@@ -205,12 +206,9 @@ function CompaniesPageContent() {
                         )}
                       </td>
                       <td className="p-4 text-right">
-                        <Link
-                          href={`/dashboard/companies/${c.id}`}
-                          className="px-3.5 py-1.5 rounded-lg bg-violet-600/10 border border-violet-500/20 text-violet-450 hover:bg-violet-600 hover:text-white transition-all text-[11px] font-bold cursor-pointer inline-block"
-                        >
+                        <span className="px-3.5 py-1.5 rounded-lg bg-violet-600/10 border border-violet-500/20 text-violet-450 group-hover:bg-violet-600 group-hover:text-white transition-all text-[11px] font-bold inline-block">
                           View Dashboard
-                        </Link>
+                        </span>
                       </td>
                     </tr>
                   );

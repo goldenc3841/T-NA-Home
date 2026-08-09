@@ -36,7 +36,8 @@ export async function GET(
             name,
             description,
             field_type,
-            field_options
+            field_options,
+            is_required
           )
         )
       `)

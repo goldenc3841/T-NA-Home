@@ -31,6 +31,18 @@ interface Score {
   value: string;
   notes: string | null;
   criterion_id: string;
+  criterion?: {
+    id: string;
+    name: string;
+    rubric_version?: {
+      id: string;
+      version_number: number;
+      rubric?: {
+        id: string;
+        title: string;
+      };
+    };
+  };
 }
 
 interface Turn {
@@ -118,14 +130,43 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
       });
       setTotalProductEvaluations(productTurnCount);
 
-      // 3. Fetch Rubric Criteria for this session's rubric version
+      // 3. Fetch Rubric Criteria for the MOST CURRENT (active) version of this session's rubric
       if (sessionData?.rubric_version_id) {
-        const { data: criteriaData } = await supabase
-          .from("rubric_criteria")
-          .select("id, name, field_type, field_options")
-          .eq("rubric_version_id", sessionData.rubric_version_id)
-          .order("created_at", { ascending: true });
-        setCriteria(criteriaData || []);
+        // 3a. Retrieve the rubric_id of this version
+        const { data: currentVersionInfo } = await supabase
+          .from("rubric_versions")
+          .select("rubric_id")
+          .eq("id", sessionData.rubric_version_id)
+          .single();
+
+        if (currentVersionInfo) {
+          // 3b. Retrieve the active version for this rubric
+          const { data: activeVersionInfo } = await supabase
+            .from("rubric_versions")
+            .select("id")
+            .eq("rubric_id", currentVersionInfo.rubric_id)
+            .eq("is_active", true)
+            .single();
+            
+          const targetVersionId = activeVersionInfo?.id || sessionData.rubric_version_id;
+
+          // 3c. Load criteria for the current active version (fallback to current version if none active)
+          const { data: criteriaData } = await supabase
+            .from("rubric_criteria")
+            .select("id, name, field_type, field_options")
+            .eq("rubric_version_id", targetVersionId)
+            .order("created_at", { ascending: true });
+          
+          setCriteria(criteriaData || []);
+        } else {
+          // Fallback if rubric_versions record is not found
+          const { data: criteriaData } = await supabase
+            .from("rubric_criteria")
+            .select("id, name, field_type, field_options")
+            .eq("rubric_version_id", sessionData.rubric_version_id)
+            .order("created_at", { ascending: true });
+          setCriteria(criteriaData || []);
+        }
       }
 
       // 4. Fetch Turns and their Scores in this session
@@ -142,7 +183,19 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
             id,
             value,
             notes,
-            criterion_id
+            criterion_id,
+            criterion:rubric_criteria (
+              id,
+              name,
+              rubric_version:rubric_versions (
+                id,
+                version_number,
+                rubric:rubrics (
+                  id,
+                  title
+                )
+              )
+            )
           )
         `)
         .eq("session_id", sessionId)
@@ -155,6 +208,28 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
       setIsLoading(false);
     }
   }
+
+  // Check if turn scores mismatch the current criteria fields
+  const hasMismatchedCriteria = (turn: Turn) => {
+    if (criteria.length === 0) return false;
+    const hasAll = criteria.every(crit => turn.scores?.some(s => s.criterion_id === crit.id));
+    const hasNoExtras = turn.scores?.every(s => criteria.some(crit => crit.id === s.criterion_id)) ?? true;
+    return !hasAll || !hasNoExtras;
+  };
+
+  // Get name of the rubric used for this turn
+  const getRubricUsed = (turn: Turn) => {
+    const firstScore = turn.scores?.[0] as any;
+    const rubricTitle = firstScore?.criterion?.rubric_version?.rubric?.title;
+    const versionNum = firstScore?.criterion?.rubric_version?.version_number;
+    if (rubricTitle && versionNum) {
+      return `${rubricTitle} (v${versionNum})`;
+    }
+    if (session?.rubric_version_id && productName) {
+      return `${companyName} Rubric`;
+    }
+    return "N/A";
+  };
 
   useEffect(() => {
     fetchSessionData();
@@ -361,6 +436,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                     <th className="p-4 w-28">Convo ID</th>
                     <th className="p-4 max-w-xs">Input</th>
                     <th className="p-4 max-w-xs">Output</th>
+                    <th className="p-4 w-40">Rubric Used</th>
                     
                     {/* Rubric criteria headers */}
                     {criteria.map((crit) => (
@@ -375,13 +451,18 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                     const globalIdx = (currentPage - 1) * ITEMS_PER_PAGE + tIdx;
                     const convoId = getConversationId(turn, globalIdx);
                     const isExpanded = !!expandedTurns[turn.id];
-
+                    const isMismatched = hasMismatchedCriteria(turn);
+ 
                     return (
                       <>
                         <tr 
                           key={turn.id} 
                           onClick={() => toggleRowExpand(turn.id)}
-                          className="hover:bg-white/[0.01] transition-colors cursor-pointer"
+                          className={`transition-colors cursor-pointer ${
+                            isMismatched 
+                              ? "bg-rose-950/20 hover:bg-rose-900/30 text-rose-200" 
+                              : "hover:bg-white/[0.01] text-slate-350"
+                          }`}
                         >
                           <td className="p-4 text-center">
                             {isExpanded ? (
@@ -390,7 +471,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                               <ChevronDown className="h-4 w-4 text-slate-500" />
                             )}
                           </td>
-                          <td className="p-4 font-mono font-bold text-slate-300">
+                          <td className={`p-4 font-mono font-bold ${isMismatched ? "text-rose-450" : "text-slate-300"}`}>
                             {convoId}
                           </td>
                           <td className="p-4 max-w-xs truncate text-slate-400 font-mono text-[11px]" title={turn.prompt}>
@@ -398,6 +479,9 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                           </td>
                           <td className="p-4 max-w-xs truncate text-slate-400 font-mono text-[11px]" title={turn.response}>
                             {turn.response}
+                          </td>
+                          <td className="p-4 text-slate-400 truncate max-w-[150px]" title={getRubricUsed(turn)}>
+                            {getRubricUsed(turn)}
                           </td>
 
                           {/* Render matching score values for each dynamic rubric header */}
@@ -432,7 +516,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                         {/* Collapsible Sub-Row Details */}
                         {isExpanded && (
                           <tr className="bg-slate-950/30">
-                            <td colSpan={criteria.length + 5} className="p-5 border-b border-white/5 space-y-4">
+                            <td colSpan={criteria.length + 6} className="p-5 border-b border-white/5 space-y-4">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                   <span className="text-[9px] font-bold text-violet-400 uppercase tracking-wider block">Prompt Input</span>

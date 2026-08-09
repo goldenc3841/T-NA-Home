@@ -47,11 +47,19 @@
       return;
     }
 
-    if (container) {
-      removeOverlay();
-    } else {
+    if (!container) {
       createOverlay();
       await fetchCompanies();
+    } else {
+      const panel = shadowRoot.querySelector(".overlay-panel");
+      if (panel) {
+        if (panel.classList.contains("hidden-panel")) {
+          panel.classList.remove("hidden-panel");
+        } else {
+          panel.classList.add("hidden-panel");
+          stopCaptureMode(); // Make sure hover capture is off when hidden
+        }
+      }
     }
   }
 
@@ -93,6 +101,7 @@
         top: 20px;
         right: 20px;
         width: 380px;
+        height: min(650px, calc(100vh - 40px));
         max-height: calc(100vh - 40px);
         background: var(--bg-glass);
         border: 1px solid var(--border);
@@ -107,6 +116,29 @@
         pointer-events: auto;
         animation: slideIn 0.3s ease-out;
         z-index: 1000;
+        overflow: hidden;
+        min-width: 300px;
+        min-height: 200px;
+      }
+
+      .resize-handle {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 14px;
+        height: 14px;
+        cursor: se-resize;
+        z-index: 1002;
+        background: linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.15) 50%);
+        border-bottom-right-radius: 12px;
+      }
+
+      .resize-handle:hover {
+        background: linear-gradient(135deg, transparent 50%, var(--primary) 50%);
+      }
+
+      .overlay-panel.minimized .resize-handle {
+        display: none;
       }
 
       @keyframes slideIn {
@@ -120,6 +152,65 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        cursor: grab;
+        user-select: none;
+      }
+
+      .header:active {
+        cursor: grabbing;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .minimize-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 1;
+        padding: 4px;
+        transition: color 0.2s;
+      }
+
+      .minimize-btn:hover {
+        color: var(--text);
+      }
+
+      .overlay-panel.minimized .content,
+      .overlay-panel.minimized .footer,
+      .overlay-panel.minimized .header-actions {
+        display: none;
+      }
+
+      .overlay-panel.minimized {
+        position: fixed !important;
+        bottom: 0 !important;
+        right: 20px !important;
+        top: auto !important;
+        left: auto !important;
+        width: auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: fit-content;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        border-bottom: none !important;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+      }
+
+      .overlay-panel.minimized .header {
+        cursor: pointer;
+        border-bottom: none !important;
+      }
+
+      .overlay-panel.hidden-panel {
+        display: none !important;
       }
 
       .header h3 {
@@ -379,7 +470,10 @@
     panel.innerHTML = `
       <div class="header">
         <h3>TNA Evaluator Overlay</h3>
-        <button class="close-btn" id="tna-close">&times;</button>
+        <div class="header-actions">
+          <button class="minimize-btn" id="tna-minimize" title="Minimize">—</button>
+          <button class="close-btn" id="tna-close" title="Close">&times;</button>
+        </div>
       </div>
       <div class="content">
         <!-- Step 1: Company, Feature & Session Selection -->
@@ -391,7 +485,7 @@
             </select>
           </div>
 
-          <div class="field-group id="tna-feature-group">
+          <div class="field-group" id="tna-feature-group">
             <label>Evaluated Feature</label>
             <select id="tna-feature-select" disabled>
               <option value="">Select Feature...</option>
@@ -433,12 +527,129 @@
       <div class="footer">
         <button class="btn btn-primary" id="tna-submit" disabled>Submit Evaluation</button>
       </div>
+      <div class="resize-handle" id="tna-resize-handle" title="Drag to Resize"></div>
     `;
 
     shadowRoot.appendChild(panel);
 
     // Event Listeners
     shadowRoot.getElementById("tna-close").addEventListener("click", removeOverlay);
+
+    const minimizeBtn = shadowRoot.getElementById("tna-minimize");
+    minimizeBtn.addEventListener("click", (e) => {
+      e.stopPropagation(); // Prevent bubbling up to header click restore
+      panel.classList.toggle("minimized");
+      const isMinimized = panel.classList.contains("minimized");
+      minimizeBtn.textContent = isMinimized ? "+" : "—";
+      minimizeBtn.title = isMinimized ? "Maximize" : "Minimize";
+    });
+
+    // Dragging Logic
+    let isDragging = false;
+    let dragStartX, dragStartY;
+    let initialLeft, initialTop;
+
+    const header = shadowRoot.querySelector(".header");
+
+    header.addEventListener("click", (e) => {
+      if (e.target.closest("button")) return; // Prevent restoration when clicking a button inside header
+      if (panel.classList.contains("minimized")) {
+        panel.classList.remove("minimized");
+        minimizeBtn.textContent = "—";
+        minimizeBtn.title = "Minimize";
+      }
+    });
+
+    header.addEventListener("mousedown", (e) => {
+      if (e.target.closest("button")) return;
+      if (panel.classList.contains("minimized")) return;
+
+      isDragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+
+      const rect = panel.getBoundingClientRect();
+      initialLeft = rect.left;
+      initialTop = rect.top;
+
+      panel.style.right = "auto";
+      panel.style.bottom = "auto";
+      panel.style.left = initialLeft + "px";
+      panel.style.top = initialTop + "px";
+
+      window.addEventListener("mousemove", onDragMouseMove);
+      window.addEventListener("mouseup", onDragMouseUp);
+      
+      header.style.cursor = "grabbing";
+      e.preventDefault();
+    });
+
+    function onDragMouseMove(e) {
+      if (!isDragging) return;
+      const dx = e.clientX - dragStartX;
+      const dy = e.clientY - dragStartY;
+
+      let newLeft = initialLeft + dx;
+      let newTop = initialTop + dy;
+
+      const rect = panel.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      newLeft = Math.max(10 - rect.width, Math.min(viewportWidth - 10, newLeft));
+      newTop = Math.max(0, Math.min(viewportHeight - 30, newTop));
+
+      panel.style.left = newLeft + "px";
+      panel.style.top = newTop + "px";
+    }
+
+    function onDragMouseUp() {
+      isDragging = false;
+      window.removeEventListener("mousemove", onDragMouseMove);
+      window.removeEventListener("mouseup", onDragMouseUp);
+      header.style.cursor = "grab";
+    }
+
+    // Custom Resizing Logic
+    let isResizing = false;
+    let resizeStartX, resizeStartY;
+    let initialWidth, initialHeight;
+
+    const resizeHandle = shadowRoot.getElementById("tna-resize-handle");
+
+    resizeHandle.addEventListener("mousedown", (e) => {
+      isResizing = true;
+      resizeStartX = e.clientX;
+      resizeStartY = e.clientY;
+
+      const rect = panel.getBoundingClientRect();
+      initialWidth = rect.width;
+      initialHeight = rect.height;
+
+      window.addEventListener("mousemove", onResizeMouseMove);
+      window.addEventListener("mouseup", onResizeMouseUp);
+
+      e.preventDefault();
+      e.stopPropagation(); // prevent header drag trigger
+    });
+
+    function onResizeMouseMove(e) {
+      if (!isResizing) return;
+      const dw = e.clientX - resizeStartX;
+      const dh = e.clientY - resizeStartY;
+
+      const newWidth = Math.max(300, initialWidth + dw);
+      const newHeight = Math.max(200, initialHeight + dh);
+
+      panel.style.width = newWidth + "px";
+      panel.style.height = newHeight + "px";
+    }
+
+    function onResizeMouseUp() {
+      isResizing = false;
+      window.removeEventListener("mousemove", onResizeMouseMove);
+      window.removeEventListener("mouseup", onResizeMouseUp);
+    }
     shadowRoot.getElementById("tna-company-select").addEventListener("change", handleCompanyChange);
     shadowRoot.getElementById("tna-feature-select").addEventListener("change", handleFeatureChange);
     shadowRoot.getElementById("tna-session-select").addEventListener("change", handleSessionChange);
@@ -475,6 +686,16 @@
       container = null;
       shadowRoot = null;
     }
+
+    // Reset draft state variables so they don't leak on next explicit instantiation
+    captureMode = null;
+    capturedPrompt = "";
+    capturedResponse = "";
+    selectedCompanyId = null;
+    selectedFeatureId = null;
+    selectedSessionId = "new";
+    newSessionName = "";
+    activeRubricVersion = null;
   }
 
   // ==========================================
@@ -688,8 +909,13 @@
         `;
       }
 
+      const isRequired = c.is_required !== false;
+      const nameLabel = isRequired 
+        ? `${c.name} <span style="color: #ef4444;">*</span>` 
+        : `${c.name} <span style="color: var(--text-muted); font-size: 10px;">(optional)</span>`;
+
       card.innerHTML = `
-        <div class="criterion-name">${c.name}</div>
+        <div class="criterion-name">${nameLabel}</div>
         <div class="criterion-desc">${c.description || ""}</div>
         <div style="margin-top: 4px;">${inputHtml}</div>
       `;
@@ -838,7 +1064,10 @@
       const criteriaCards = shadowRoot.querySelectorAll(".criterion-card");
       criteriaCards.forEach(card => {
         const val = card.querySelector(".criterion-value").value.trim();
-        if (!val) {
+        const critId = card.dataset.id;
+        const matchingCrit = activeRubricVersion.criteria.find(c => c.id === critId);
+        const isRequired = matchingCrit ? (matchingCrit.is_required !== false) : true;
+        if (isRequired && !val) {
           areCriteriaFilled = false;
         }
       });

@@ -138,7 +138,7 @@ export default function DashboardPage() {
     });
   }
 
-  // Find unique recently evaluated companies sorted by their max updated_at date
+  // Find unique recently evaluated companies sorted by their max updated_at date (limited to 4)
   const seenCompanies = new Set<string>();
   const recentCompanies: Array<{ id: string; name: string; lastActivity: string }> = [];
   
@@ -146,11 +146,13 @@ export default function DashboardPage() {
     const company = s.feature?.company;
     if (company && !seenCompanies.has(company.id)) {
       seenCompanies.add(company.id);
-      recentCompanies.push({
-        id: company.id,
-        name: company.name,
-        lastActivity: s.updated_at
-      });
+      if (recentCompanies.length < 4) {
+        recentCompanies.push({
+          id: company.id,
+          name: company.name,
+          lastActivity: s.updated_at
+        });
+      }
     }
   });
 
@@ -200,15 +202,6 @@ export default function DashboardPage() {
     }));
   };
 
-  const scrollLeft = () => {
-    const el = document.getElementById("recent-companies-scroll");
-    if (el) el.scrollBy({ left: -240, behavior: "smooth" });
-  };
-
-  const scrollRight = () => {
-    const el = document.getElementById("recent-companies-scroll");
-    if (el) el.scrollBy({ left: 240, behavior: "smooth" });
-  };
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto py-2">
@@ -219,7 +212,13 @@ export default function DashboardPage() {
         </div>
         <div className="relative z-10 space-y-1">
           <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-            Welcome, <span className="bg-gradient-to-r from-violet-400 to-indigo-300 bg-clip-text text-transparent">{profile?.full_name || "Evaluator"}</span>
+            Welcome, <span className="bg-gradient-to-r from-violet-400 to-indigo-300 bg-clip-text text-transparent">
+              {profile?.full_name 
+                ? (profile.full_name.includes("@") 
+                    ? profile.full_name.split("@")[0].split(".")[0].charAt(0).toUpperCase() + profile.full_name.split("@")[0].split(".")[0].slice(1)
+                    : profile.full_name.split(" ")[0].charAt(0).toUpperCase() + profile.full_name.split(" ")[0].slice(1))
+                : "Evaluator"}
+            </span>
           </h1>
         </div>
       </div>
@@ -232,8 +231,8 @@ export default function DashboardPage() {
         </h2>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((n) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((n) => (
               <div key={n} className="glass-card h-28 rounded-xl border border-white/5 p-4 animate-pulse flex flex-col justify-between">
                 <div className="h-4 bg-slate-800 rounded w-2/3" />
                 <div className="h-3 bg-slate-800 rounded w-1/2" />
@@ -245,60 +244,40 @@ export default function DashboardPage() {
             No evaluated companies yet. Perform evaluations with the Chrome extension to see them here.
           </div>
         ) : (
-          <div className="relative group">
-            {/* Scroll Navigation Arrows */}
-            <button
-              onClick={scrollLeft}
-              className="absolute -left-4 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-slate-900/90 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 hover:border-violet-500/30 transition-all opacity-0 group-hover:opacity-100 z-10 cursor-pointer shadow-lg animate-in fade-in"
-            >
-              <ChevronRight className="h-4 w-4 rotate-180" />
-            </button>
-            <button
-              onClick={scrollRight}
-              className="absolute -right-4 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-slate-900/90 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 hover:border-violet-500/30 transition-all opacity-0 group-hover:opacity-100 z-10 cursor-pointer shadow-lg animate-in fade-in"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-
-            {/* Pills Container */}
-            <div
-              id="recent-companies-scroll"
-              className="flex gap-4 overflow-x-auto pb-3 pt-1 px-1 scroll-smooth no-scrollbar"
-            >
-              {recentCompanies.map((company) => (
-                <Link
-                  key={company.id}
-                  href={`/dashboard/companies/${company.id}`}
-                  className="glass-card flex-none w-56 rounded-xl border border-white/5 p-4 hover:border-violet-500/40 hover:bg-violet-600/[0.03] transition-all duration-300 group/pill"
-                >
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="min-w-0">
-                      <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Client</div>
-                      <div className="text-sm font-bold text-slate-200 mt-0.5 truncate group-hover/pill:text-violet-400 transition-colors">
-                        {company.name}
-                      </div>
-                    </div>
-                    <div className="h-8 w-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-450 shrink-0">
-                      <Building className="h-4 w-4" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {recentCompanies.map((company) => (
+              <Link
+                key={company.id}
+                href={`/dashboard/companies/${company.id}`}
+                className="glass-card w-full rounded-xl border border-white/5 p-4 hover:border-violet-500/40 hover:bg-violet-600/[0.03] transition-all duration-300 group/pill"
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <div className="min-w-0">
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Client</div>
+                    <div className="text-sm font-bold text-slate-200 mt-0.5 truncate group-hover/pill:text-violet-400 transition-colors">
+                      {company.name}
                     </div>
                   </div>
-
-                  <div className="mt-4 flex items-center gap-1.5 text-[10px] text-slate-400">
-                    <Clock className="h-3.5 w-3.5 text-slate-500" />
-                    <span>Last Activity: <span className="font-semibold text-slate-300">{formatRelativeTime(company.lastActivity)}</span></span>
+                  <div className="h-8 w-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-450 shrink-0">
+                    <Building className="h-4 w-4" />
                   </div>
-                </Link>
-              ))}
-            </div>
+                </div>
+
+                <div className="mt-4 flex items-center gap-1.5 text-[10px] text-slate-400">
+                  <Clock className="h-3.5 w-3.5 text-slate-500" />
+                  <span>Last Activity: <span className="font-semibold text-slate-300">{formatRelativeTime(company.lastActivity)}</span></span>
+                </div>
+              </Link>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Section: Recent Evaluation Sessions Tree */}
+      {/* Section: Recent Evaluations Tree */}
       <div className="space-y-3">
         <h2 className="text-xs uppercase font-bold tracking-widest text-slate-400 flex items-center gap-2">
           <Layers className="h-3.5 w-3.5 text-violet-400" />
-          Recent Evaluation Sessions
+          Recent Evaluations
         </h2>
 
         {isLoading ? (

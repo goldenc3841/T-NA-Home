@@ -37,6 +37,7 @@ CREATE TABLE public.rubrics (
     company_id UUID NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     description TEXT,
+    draft_form_state JSONB DEFAULT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -58,6 +59,7 @@ CREATE TABLE public.rubric_criteria (
     description TEXT,
     field_type TEXT NOT NULL CHECK (field_type IN ('rating', 'text', 'boolean', 'select')),
     field_options JSONB DEFAULT NULL, -- configuration (e.g. ['option1', 'option2'] or {min: 1, max: 5})
+    is_required BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -65,7 +67,7 @@ CREATE TABLE public.rubric_criteria (
 CREATE TABLE public.sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     feature_id UUID NOT NULL REFERENCES public.features(id) ON DELETE CASCADE,
-    rubric_version_id UUID NOT NULL REFERENCES public.rubric_versions(id) ON DELETE RESTRICT,
+    rubric_version_id UUID NOT NULL REFERENCES public.rubric_versions(id) ON DELETE CASCADE,
     evaluator_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     metadata JSONB DEFAULT '{}'::jsonb,
