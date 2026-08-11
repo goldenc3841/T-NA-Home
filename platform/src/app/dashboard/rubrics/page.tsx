@@ -33,6 +33,7 @@ interface Rubric {
     ratingMax: number;
     selectOptions: string;
     editingIndex: number | null;
+    criteria?: Criterion[];
   } | null;
 }
 
@@ -431,9 +432,11 @@ export default function RubricsPage() {
     
     setVersionsLog(versions || []);
 
-    // 3. Fetch active version criteria
+    // 3. Restore draft criteria if present, otherwise fetch active version criteria
     const activeVersion = versions?.find(v => v.is_active);
-    if (activeVersion) {
+    if (activeRubric.draft_form_state?.criteria) {
+      setCriteria(activeRubric.draft_form_state.criteria);
+    } else if (activeVersion) {
       const { data: criteriaList } = await supabase
         .from("rubric_criteria")
         .select("*")
@@ -703,13 +706,18 @@ export default function RubricsPage() {
           finalTitle = `Untitled Rubric ${untitledCount + 1}`;
         }
 
+        const draftStatePayload = {
+          ...formState,
+          criteria: currentCriteria,
+        };
+
         const { data: newRubric, error: rubricErr } = await supabase
           .from("rubrics")
           .insert({
             company_id: selectedCompanyId,
             title: finalTitle,
             description: desc.trim() || null,
-            draft_form_state: formState,
+            draft_form_state: draftStatePayload,
           })
           .select()
           .single();
@@ -769,62 +777,23 @@ export default function RubricsPage() {
         // Existing rubric
         if (!activeRubric) return;
 
+        const draftStatePayload = {
+          ...formState,
+          criteria: currentCriteria,
+        };
+
         const { data: updatedRubric, error: rubricErr } = await supabase
           .from("rubrics")
           .update({
             title: finalTitle || activeRubric.title,
             description: desc.trim() || null,
-            draft_form_state: formState,
+            draft_form_state: draftStatePayload,
           })
           .eq("id", rubricId)
           .select()
           .single();
 
         if (rubricErr) throw rubricErr;
-
-        const { data: versions } = await supabase
-          .from("rubric_versions")
-          .select("id, version_number, is_active")
-          .eq("rubric_id", rubricId)
-          .order("version_number", { ascending: false });
-
-        let activeVersion = versions?.find(v => v.is_active);
-        if (!activeVersion) {
-          const { data: newVersion } = await supabase
-            .from("rubric_versions")
-            .insert({
-              rubric_id: rubricId,
-              version_number: 1,
-              is_active: true,
-            })
-            .select()
-            .single();
-          activeVersion = newVersion;
-        }
-
-        if (activeVersion) {
-          await supabase
-            .from("rubric_criteria")
-            .delete()
-            .eq("rubric_version_id", activeVersion.id);
-
-          if (currentCriteria.length > 0) {
-            const criteriaPayload = currentCriteria.map(c => ({
-              rubric_version_id: activeVersion.id,
-              name: c.name,
-              description: c.description || null,
-              field_type: c.field_type,
-              field_options: c.field_options,
-              is_required: c.is_required ?? true,
-            }));
-
-            const { error: criteriaErr } = await supabase
-              .from("rubric_criteria")
-              .insert(criteriaPayload);
-
-            if (criteriaErr) throw criteriaErr;
-          }
-        }
 
         const { data: list } = await supabase
           .from("rubrics")
