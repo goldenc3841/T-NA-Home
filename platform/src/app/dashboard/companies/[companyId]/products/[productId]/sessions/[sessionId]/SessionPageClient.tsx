@@ -63,6 +63,14 @@ interface EvaluationSession {
   rubric_version_id: string;
   created_at: string;
   updated_at: string;
+  rubric_version?: {
+    id: string;
+    version_number: number;
+    rubric: {
+      id: string;
+      title: string;
+    };
+  };
 }
 
 interface SessionPageClientProps {
@@ -97,7 +105,22 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
       // 1. Fetch current session & nested feature details
       const { data: sessionData, error: sessionErr } = await supabase
         .from("sessions")
-        .select("id, name, rubric_version_id, created_at, updated_at, feature:features(name, company:companies(name))")
+        .select(`
+          id, 
+          name, 
+          rubric_version_id, 
+          created_at, 
+          updated_at, 
+          feature:features(name, company:companies(name)),
+          rubric_version:rubric_versions(
+            id,
+            version_number,
+            rubric:rubrics(
+              id,
+              title
+            )
+          )
+        `)
         .eq("id", sessionId)
         .single();
       
@@ -109,7 +132,8 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
           name: sessionData.name,
           rubric_version_id: sessionData.rubric_version_id,
           created_at: sessionData.created_at,
-          updated_at: sessionData.updated_at
+          updated_at: sessionData.updated_at,
+          rubric_version: sessionData.rubric_version as any
         });
         const feature = Array.isArray(sessionData.feature)
           ? sessionData.feature[0]
@@ -310,8 +334,8 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
     if (rubricTitle && versionNum) {
       return `${rubricTitle} (v${versionNum})`;
     }
-    if (session?.rubric_version_id && productName) {
-      return `${companyName} Rubric`;
+    if (session?.rubric_version?.rubric?.title) {
+      return `${session.rubric_version.rubric.title} (v${session.rubric_version.version_number})`;
     }
     return "N/A";
   };
