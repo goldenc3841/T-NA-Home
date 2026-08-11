@@ -17,7 +17,8 @@ import {
   Sparkles,
   Award,
   AlertCircle,
-  Trash2
+  Trash2,
+  Download
 } from "lucide-react";
 
 interface Criterion {
@@ -245,6 +246,62 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
     }
   };
 
+  // Export Detailed Evaluations table to downloadable CSV file
+  const handleExportCSV = () => {
+    if (turns.length === 0) {
+      alert("No data available to export.");
+      return;
+    }
+
+    const headers = [
+      "Convo ID",
+      "Input",
+      "Output",
+      "Rubric Used",
+      ...criteria.map(crit => crit.name),
+      "Note"
+    ];
+
+    const escapeCSV = (val: string | null | undefined) => {
+      if (val === null || val === undefined) return '""';
+      const formatted = String(val).replace(/"/g, '""');
+      return `"${formatted}"`;
+    };
+
+    const rows = turns.map((turn, globalIdx) => {
+      const convoId = getConversationId(turn, globalIdx);
+      const rubricUsed = getRubricUsed(turn);
+      const note = turn.scores?.find(s => s.notes)?.notes || "";
+      const criteriaScores = criteria.map(crit => {
+        const scoreObj = turn.scores?.find(s => s.criterion_id === crit.id);
+        return scoreObj?.value || "";
+      });
+
+      return [
+        convoId,
+        turn.prompt,
+        turn.response,
+        rubricUsed,
+        ...criteriaScores,
+        note
+      ].map(escapeCSV).join(",");
+    });
+
+    const csvContent = [headers.map(escapeCSV).join(","), ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const clientClean = companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const dateClean = new Date().toISOString().split("T")[0];
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${clientClean}-evaluations-${dateClean}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Get name of the rubric used for this turn
   const getRubricUsed = (turn: Turn) => {
     const firstScore = turn.scores?.[0] as any;
@@ -444,6 +501,13 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
             <MessageSquare className="h-4.5 w-4.5 text-violet-500" />
             Detailed Evaluations
           </h2>
+          <button
+            onClick={handleExportCSV}
+            className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-350 hover:text-white border border-white/5 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export CSV
+          </button>
         </div>
 
         {isLoading ? (
