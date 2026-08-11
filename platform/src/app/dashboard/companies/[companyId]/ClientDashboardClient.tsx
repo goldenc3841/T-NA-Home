@@ -451,14 +451,13 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                           <td className="p-3 font-mono text-[10px] text-slate-400">
                             {session.id.substring(0, 8)}
                           </td>
-                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                            <Link
-                              href={`/dashboard/companies/${companyId}/products/${session.feature?.id}`}
-                              className="font-semibold text-slate-200 hover:text-violet-400 hover:underline transition-colors truncate max-w-[120px] block"
+                          <td className="p-3">
+                            <span 
+                              className="font-semibold text-slate-200 truncate max-w-[120px] block"
                               title={session.feature?.name}
                             >
                               {session.feature?.name}
-                            </Link>
+                            </span>
                           </td>
                           <td className="p-3 text-slate-400 truncate max-w-[120px]" title={session.rubric_version?.rubric?.title}>
                             {session.rubric_version?.rubric?.title}
