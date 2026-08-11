@@ -201,7 +201,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
           )
         `)
         .eq("session_id", sessionId)
-        .order("turn_number", { ascending: true });
+        .order("turn_number", { ascending: false });
       
       setTurns(turnsData as unknown as Turn[] || []);
     } catch (err) {
@@ -268,8 +268,8 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
       return `"${formatted}"`;
     };
 
-    const rows = turns.map((turn, globalIdx) => {
-      const convoId = getConversationId(turn, globalIdx);
+    const rows = turns.map((turn) => {
+      const convoId = getConversationId(turn, turn.turn_number - 1);
       const rubricUsed = getRubricUsed(turn);
       const note = turn.scores?.find(s => s.notes)?.notes || "";
       const criteriaScores = criteria.map(crit => {
@@ -541,8 +541,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                 </thead>
                 <tbody className="divide-y divide-white/5 text-slate-350">
                   {paginatedTurns.map((turn, tIdx) => {
-                    const globalIdx = (currentPage - 1) * ITEMS_PER_PAGE + tIdx;
-                    const convoId = getConversationId(turn, globalIdx);
+                    const convoId = getConversationId(turn, turn.turn_number - 1);
                     const isExpanded = !!expandedTurns[turn.id];
                     const isMismatched = hasMismatchedCriteria(turn);
  
