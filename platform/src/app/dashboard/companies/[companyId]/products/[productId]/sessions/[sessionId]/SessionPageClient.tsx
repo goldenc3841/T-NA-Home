@@ -214,8 +214,8 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
   // Check if turn scores mismatch the current criteria fields
   const hasMismatchedCriteria = (turn: Turn) => {
     if (criteria.length === 0) return false;
-    const hasAll = criteria.every(crit => turn.scores?.some(s => s.criterion_id === crit.id));
-    const hasNoExtras = turn.scores?.every(s => criteria.some(crit => crit.id === s.criterion_id)) ?? true;
+    const hasAll = criteria.every(crit => turn.scores?.some(s => s.criterion?.name === crit.name));
+    const hasNoExtras = turn.scores?.every(s => criteria.some(crit => crit.name === s.criterion?.name)) ?? true;
     return !hasAll || !hasNoExtras;
   };
 
@@ -273,7 +273,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
       const rubricUsed = getRubricUsed(turn);
       const note = turn.scores?.find(s => s.notes)?.notes || "";
       const criteriaScores = criteria.map(crit => {
-        const scoreObj = turn.scores?.find(s => s.criterion_id === crit.id);
+        const scoreObj = turn.scores?.find(s => s.criterion_id === crit.id || s.criterion?.name === crit.name);
         return scoreObj?.value || "";
       });
 
@@ -579,7 +579,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
 
                           {/* Render matching score values for each dynamic rubric header */}
                           {criteria.map((crit) => {
-                            const score = turn.scores?.find(s => s.criterion_id === crit.id);
+                            const score = turn.scores?.find(s => s.criterion_id === crit.id || s.criterion?.name === crit.name);
                             const val = score?.value || "N/A";
                             const isPass = val.toUpperCase() === "PASS" || val.toUpperCase() === "TRUE";
                             const isFail = val.toUpperCase() === "FAIL" || val.toUpperCase() === "FALSE";
