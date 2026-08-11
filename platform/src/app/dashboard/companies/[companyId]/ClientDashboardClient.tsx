@@ -445,7 +445,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                       {paginatedSessions.map((session) => (
                         <tr 
                           key={session.id} 
-                          onClick={() => setInspectedSession(session)}
+                          onClick={() => router.push(`/dashboard/companies/${companyId}/products/${session.feature?.id}/sessions/${session.id}`)}
                           className="hover:bg-white/[0.02] transition-colors text-slate-300 cursor-pointer"
                         >
                           <td className="p-3 font-mono text-[10px] text-slate-400">
