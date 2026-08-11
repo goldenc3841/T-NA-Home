@@ -543,15 +543,6 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                   {paginatedTurns.map((turn, tIdx) => {
                     const globalIdx = (currentPage - 1) * ITEMS_PER_PAGE + tIdx;
                     const convoId = getConversationId(turn, globalIdx);
-                    if (convoId.toLowerCase() === "gc9e7") {
-                      console.log("Diagnostic info for Gc9e7:", {
-                        turnId: turn.id,
-                        prompt: turn.prompt.substring(0, 30),
-                        scoresCount: turn.scores?.length || 0,
-                        scoresList: turn.scores,
-                        criteria: criteria.map(c => ({ id: c.id, name: c.name }))
-                      });
-                    }
                     const isExpanded = !!expandedTurns[turn.id];
                     const isMismatched = hasMismatchedCriteria(turn);
  
