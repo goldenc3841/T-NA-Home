@@ -518,7 +518,12 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
             <div className="flex justify-between items-center pb-3 border-b border-white/5 mb-4">
               <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest flex items-center gap-2 truncate">
                 <Settings className="h-4.5 w-4.5 text-violet-450" />
-                {company?.name || "Client"} Rubrics
+                <Link 
+                  href={`/dashboard/rubrics?companyId=${companyId}`}
+                  className="hover:text-violet-400 hover:underline transition-colors"
+                >
+                  {company?.name || "Client"} Rubrics
+                </Link>
               </h2>
               <Link
   href={`/dashboard/rubrics?companyId=${companyId}&rubricId=new`}
