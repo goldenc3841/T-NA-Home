@@ -672,6 +672,7 @@
     document.addEventListener("mouseover", handlePageMouseOver, true);
     document.addEventListener("mouseout", handlePageMouseOut, true);
     document.addEventListener("click", handlePageClick, true);
+    document.addEventListener("keydown", handleKeyDown, true);
   }
 
   function removeOverlay() {
@@ -680,6 +681,7 @@
     document.removeEventListener("mouseover", handlePageMouseOver, true);
     document.removeEventListener("mouseout", handlePageMouseOut, true);
     document.removeEventListener("click", handlePageClick, true);
+    document.removeEventListener("keydown", handleKeyDown, true);
 
     if (container) {
       container.remove();
@@ -1035,6 +1037,15 @@
 
     stopCaptureMode();
     validateForm();
+  }
+
+  function handleKeyDown(e) {
+    if (!captureMode) return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      stopCaptureMode();
+    }
   }
 
   // ==========================================
