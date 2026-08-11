@@ -16,7 +16,8 @@ import {
   MessageSquare,
   Sparkles,
   Award,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from "lucide-react";
 
 interface Criterion {
@@ -215,6 +216,33 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
     const hasAll = criteria.every(crit => turn.scores?.some(s => s.criterion_id === crit.id));
     const hasNoExtras = turn.scores?.every(s => criteria.some(crit => crit.id === s.criterion_id)) ?? true;
     return !hasAll || !hasNoExtras;
+  };
+
+  // Delete turn row from database and local state
+  const handleDeleteTurn = async (turnId: string) => {
+    if (!window.confirm("Are you sure you want to delete this evaluation row? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("turns")
+        .delete()
+        .eq("id", turnId);
+
+      if (error) throw error;
+
+      setTurns(prev => {
+        const updated = prev.filter(t => t.id !== turnId);
+        const newTotalPages = Math.ceil(updated.length / ITEMS_PER_PAGE);
+        if (currentPage > newTotalPages && newTotalPages > 0) {
+          setCurrentPage(newTotalPages);
+        }
+        return updated;
+      });
+    } catch (err: any) {
+      alert("Error deleting evaluation row: " + err.message);
+    }
   };
 
   // Get name of the rubric used for this turn
@@ -444,6 +472,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                     ))}
                     
                     <th className="p-4 w-24">Note</th>
+                    <th className="p-4 w-12 text-right"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-slate-350">
@@ -511,12 +540,22 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                           <td className="p-4 text-slate-450 truncate max-w-[100px]" title={turn.scores?.[0]?.notes || "N/A"}>
                             {turn.scores?.find(s => s.notes)?.notes || "N/A"}
                           </td>
+                          <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTurn(turn.id)}
+                              className="text-slate-500 hover:text-rose-450 p-1.5 rounded hover:bg-rose-950/20 transition-all cursor-pointer inline-flex items-center"
+                              title="Delete Evaluation Row"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </td>
                         </tr>
 
                         {/* Collapsible Sub-Row Details */}
                         {isExpanded && (
                           <tr className="bg-slate-950/30">
-                            <td colSpan={criteria.length + 6} className="p-5 border-b border-white/5 space-y-4">
+                            <td colSpan={criteria.length + 7} className="p-5 border-b border-white/5 space-y-4">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                   <span className="text-[9px] font-bold text-violet-400 uppercase tracking-wider block">Prompt Input</span>
