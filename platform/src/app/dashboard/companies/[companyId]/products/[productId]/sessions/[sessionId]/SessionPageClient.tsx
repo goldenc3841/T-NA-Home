@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -483,7 +483,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                     const isMismatched = hasMismatchedCriteria(turn);
  
                     return (
-                      <>
+                      <React.Fragment key={turn.id}>
                         <tr 
                           key={turn.id} 
                           onClick={() => toggleRowExpand(turn.id)}
@@ -605,7 +605,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                             </td>
                           </tr>
                         )}
-                      </>
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
