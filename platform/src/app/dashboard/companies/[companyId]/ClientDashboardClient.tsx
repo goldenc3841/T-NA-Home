@@ -439,16 +439,19 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                         <th className="p-3">Rubric</th>
                         <th className="p-3">Created</th>
                         <th className="p-3">Last Activity</th>
-                        <th className="p-3 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {paginatedSessions.map((session) => (
-                        <tr key={session.id} className="hover:bg-white/[0.01] transition-colors text-slate-300">
+                        <tr 
+                          key={session.id} 
+                          onClick={() => setInspectedSession(session)}
+                          className="hover:bg-white/[0.02] transition-colors text-slate-300 cursor-pointer"
+                        >
                           <td className="p-3 font-mono text-[10px] text-slate-400">
                             {session.id.substring(0, 8)}
                           </td>
-                          <td className="p-3">
+                          <td className="p-3" onClick={(e) => e.stopPropagation()}>
                             <Link
                               href={`/dashboard/companies/${companyId}/products/${session.feature?.id}`}
                               className="font-semibold text-slate-200 hover:text-violet-400 hover:underline transition-colors truncate max-w-[120px] block"
@@ -468,14 +471,6 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                               <Clock className="h-3 w-3 text-slate-500" />
                               {formatRelativeTime(session.updated_at)} ago
                             </span>
-                          </td>
-                          <td className="p-3 text-right">
-                            <button
-                              onClick={() => setInspectedSession(session)}
-                              className="px-2.5 py-1 rounded bg-slate-950 hover:bg-violet-600 border border-white/5 text-slate-400 hover:text-white transition-all text-[10px] font-bold cursor-pointer"
-                            >
-                              View
-                            </button>
                           </td>
                         </tr>
                       ))}
