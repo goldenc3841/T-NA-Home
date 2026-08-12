@@ -330,7 +330,7 @@ export default function DashboardPage() {
                       </div>
                       
                       <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-[10px] text-[#7A6C62] font-bold bg-white px-2.5 py-1 rounded-md border border-[#E3DBCF]">
+                        <span className="text-[10px] text-[#1E3A5F] font-extrabold bg-[#94BBE0]/30 px-2.5 py-1 rounded-md border border-[#94BBE0]/60 shadow-sm">
                           {formatRelativeTime(row.lastActivity)}
                         </span>
                       </div>

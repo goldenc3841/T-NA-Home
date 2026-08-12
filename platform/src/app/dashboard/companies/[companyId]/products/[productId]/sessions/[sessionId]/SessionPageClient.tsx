@@ -500,7 +500,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
             <Sparkles className="h-4 w-4 text-[#E05D38]" />
             Session Summary Dashboard
           </h2>
-          <span className="text-[10px] text-[#E05D38] font-extrabold uppercase bg-[#E05D38]/10 border border-[#E05D38]/30 px-3 py-1 rounded-full">
+          <span className="text-[10px] text-[#1E3A5F] font-extrabold uppercase bg-[#94BBE0]/30 border border-[#94BBE0]/60 px-3 py-1 rounded-full shadow-sm">
             {totalProductEvaluations} Total Evaluations
           </span>
         </div>

@@ -206,7 +206,7 @@ function CompaniesPageContent() {
                         )}
                       </td>
                       <td className="p-4 text-right">
-                        <span className="px-3.5 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] group-hover:bg-[#E05D38] group-hover:text-white transition-all text-[11px] font-bold inline-block">
+                        <span className="px-3.5 py-1.5 rounded-lg bg-[#94BBE0]/30 border border-[#94BBE0]/60 text-[#1E3A5F] group-hover:bg-[#94BBE0] group-hover:text-[#1E3A5F] transition-all text-[11px] font-extrabold inline-block shadow-sm">
                           View Dashboard
                         </span>
                       </td>
