@@ -838,10 +838,7 @@
       }
 
       // 2. Load active sessions for this feature to support multi-turn appending
-      activeSessions = await apiFetch(`/api/features/${selectedFeatureId}/sessions`);
-      sessionSelect.innerHTML = '<option value="new">Create New Session...</option>' +
-        activeSessions.map(s => `<option value="${s.id}">${s.name} (Turns: ${s.turns_count})</option>`).join("");
-      sessionSelect.disabled = false;
+      await refreshSessionsOnly();
     } catch (err) {
       console.error("Error loading active rubric/sessions:", err);
       if (!err.isAuthError) {
@@ -849,8 +846,28 @@
       }
     }
     
-    handleSessionChange({ target: { value: selectedSessionId } });
     validateForm();
+  }
+
+  async function refreshSessionsOnly() {
+    if (!selectedFeatureId) return;
+    const sessionSelect = shadowRoot.getElementById("tna-session-select");
+    try {
+      activeSessions = await apiFetch(`/api/features/${selectedFeatureId}/sessions`);
+      sessionSelect.innerHTML = '<option value="new">Create New Session...</option>' +
+        activeSessions.map(s => `<option value="${s.id}">${s.name} (Turns: ${s.turns_count})</option>`).join("");
+      sessionSelect.disabled = false;
+
+      if (selectedSessionId && activeSessions.some(s => s.id === selectedSessionId)) {
+        sessionSelect.value = selectedSessionId;
+      } else {
+        selectedSessionId = "new";
+        sessionSelect.value = "new";
+      }
+      handleSessionChange({ target: { value: selectedSessionId } });
+    } catch (err) {
+      console.error("Error refreshing sessions:", err);
+    }
   }
 
   function getFormattedDateName(d = new Date()) {
@@ -1150,26 +1167,19 @@
 
       showToast("Evaluation Saved Successfully!");
       
-      // Reset prompt and response fields for next evaluation
+      // Reset prompt and response text fields for the next turn
       capturedPrompt = "";
       capturedResponse = "";
       shadowRoot.getElementById("tna-prompt-text").value = "";
       shadowRoot.getElementById("tna-response-text").value = "";
       
-      // Refresh features to load the updated session list (with the newly created session if applicable)
-      await handleFeatureChange({ target: { value: selectedFeatureId } });
-      
-      // If we just created a new session, auto-select it in the dropdown so they can log multi-turn turns easily!
-      if (selectedSessionId === "new" && result.session_id) {
+      // If a new session was created on the backend, update selectedSessionId to match it
+      if (result && result.session_id) {
         selectedSessionId = result.session_id;
-        setTimeout(() => {
-          const sessionSelect = shadowRoot.getElementById("tna-session-select");
-          if (sessionSelect) {
-            sessionSelect.value = result.session_id;
-            handleSessionChange({ target: { value: result.session_id } });
-          }
-        }, 100);
       }
+      
+      // Refresh active sessions list for this feature; automatically retains selectedSessionId
+      await refreshSessionsOnly();
     } catch (err) {
       if (!err.isAuthError) {
         alert("Submission failed: " + err.message);
