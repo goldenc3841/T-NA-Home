@@ -547,6 +547,55 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
     currentPage * ITEMS_PER_PAGE
   );
 
+  function renderTextWithImages(text: string) {
+    if (!text) return null;
+    
+    // Check if text contains markdown images like ![Alt](url)
+    const imgRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    const matches = Array.from(text.matchAll(imgRegex));
+
+    if (matches.length === 0) {
+      return <div className="whitespace-pre-wrap">{text}</div>;
+    }
+
+    const elements: React.ReactNode[] = [];
+    let lastIndex = 0;
+
+    matches.forEach((match, idx) => {
+      const matchIndex = match.index || 0;
+      const prevText = text.substring(lastIndex, matchIndex).trim();
+      if (prevText) {
+        elements.push(<div key={`text-${idx}`} className="whitespace-pre-wrap">{prevText}</div>);
+      }
+
+      const alt = match[1] || "Captured Image";
+      const src = match[2];
+      elements.push(
+        <div key={`img-${idx}`} className="my-2 p-1.5 bg-[#FAF6EE] border border-[#E3DBCF] rounded-lg inline-block">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src={src} 
+            alt={alt} 
+            className="max-h-48 max-w-full rounded-md object-contain shadow-sm" 
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = "none";
+            }}
+          />
+          <span className="text-[9px] text-[#7A6C62] block mt-1 font-mono truncate max-w-xs">{alt}</span>
+        </div>
+      );
+
+      lastIndex = matchIndex + match[0].length;
+    });
+
+    const remainingText = text.substring(lastIndex).trim();
+    if (remainingText) {
+      elements.push(<div key="text-end" className="whitespace-pre-wrap">{remainingText}</div>);
+    }
+
+    return <div className="space-y-2">{elements}</div>;
+  }
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto py-2">
       {/* Clickable Breadcrumbs */}
@@ -797,14 +846,14 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                   <span className="text-[9px] font-bold text-[#E05D38] uppercase tracking-wider block">Prompt Input</span>
-                                  <div className="bg-white rounded-xl p-3 border border-[#E3DBCF] font-mono text-[11px] text-[#2B231F] shadow-sm leading-relaxed whitespace-pre-wrap">
-                                    {turn.prompt}
+                                  <div className="bg-white rounded-xl p-3 border border-[#E3DBCF] font-mono text-[11px] text-[#2B231F] shadow-sm leading-relaxed">
+                                    {renderTextWithImages(turn.prompt)}
                                   </div>
                                 </div>
                                 <div className="space-y-1.5">
                                   <span className="text-[9px] font-bold text-emerald-700 uppercase tracking-wider block">Response Output</span>
-                                  <div className="bg-white rounded-xl p-3 border border-[#E3DBCF] font-mono text-[11px] text-[#2B231F] shadow-sm leading-relaxed whitespace-pre-wrap">
-                                    {turn.response}
+                                  <div className="bg-white rounded-xl p-3 border border-[#E3DBCF] font-mono text-[11px] text-[#2B231F] shadow-sm leading-relaxed">
+                                    {renderTextWithImages(turn.response)}
                                   </div>
                                 </div>
                               </div>

@@ -1063,6 +1063,61 @@
     }
   }
 
+  function extractCapturedContent(target) {
+    if (!target) return "";
+
+    const parts = [];
+
+    // 1. If target is an <img> tag itself
+    if (target.tagName && target.tagName.toLowerCase() === "img") {
+      const src = target.src || target.getAttribute("src") || "";
+      const alt = target.alt || target.getAttribute("alt") || "Captured Image";
+      if (src) {
+        parts.push(`![${alt}](${src})`);
+      }
+    }
+
+    // 2. Search for <img> tags inside target element
+    const childImgs = target.querySelectorAll ? target.querySelectorAll("img") : [];
+    childImgs.forEach(img => {
+      const src = img.src || img.getAttribute("src") || "";
+      const alt = img.alt || img.getAttribute("alt") || "Captured Image";
+      if (src && !parts.some(p => p.includes(src))) {
+        parts.push(`![${alt}](${src})`);
+      }
+    });
+
+    // 3. Search for SVG or background images if no img tag found
+    if (parts.length === 0 && target.tagName && target.tagName.toLowerCase() === "svg") {
+      parts.push(`[Captured SVG Image]`);
+    } else if (parts.length === 0 && window.getComputedStyle) {
+      try {
+        const bgImg = window.getComputedStyle(target).backgroundImage;
+        if (bgImg && bgImg !== "none" && bgImg.startsWith("url(")) {
+          const bgUrl = bgImg.replace(/^url\(["']?/, "").replace(/["']?\)$/, "");
+          if (bgUrl) {
+            parts.push(`![Background Image](${bgUrl})`);
+          }
+        }
+      } catch (e) {
+        // ignore style parse error
+      }
+    }
+
+    // 4. Extract text content
+    const textContent = (target.innerText || target.value || target.textContent || "").trim();
+    if (textContent) {
+      parts.push(textContent);
+    } else if (parts.length === 0) {
+      const altOrTitle = target.getAttribute("alt") || target.getAttribute("title") || target.getAttribute("aria-label");
+      if (altOrTitle) {
+        parts.push(altOrTitle);
+      }
+    }
+
+    return parts.join("\n\n").trim();
+  }
+
   function handlePageClick(e) {
     if (!captureMode) return;
     if (container.contains(e.target)) return;
@@ -1070,13 +1125,13 @@
     e.preventDefault();
     e.stopPropagation();
 
-    const clickedText = e.target.innerText || e.target.value || "";
+    const capturedContent = extractCapturedContent(e.target);
     
     if (captureMode === "prompt") {
-      capturedPrompt = clickedText.trim();
+      capturedPrompt = capturedContent;
       shadowRoot.getElementById("tna-prompt-text").value = capturedPrompt;
     } else if (captureMode === "response") {
-      capturedResponse = clickedText.trim();
+      capturedResponse = capturedContent;
       shadowRoot.getElementById("tna-response-text").value = capturedResponse;
     }
 
