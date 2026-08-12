@@ -460,7 +460,76 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
       {/* Two Column Section */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         
-        {/* Left Column: Evaluation Sessions (3/5 width) */}
+        {/* Left Column: Client Rubrics (2/5 width) */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="glass-card rounded-xl border border-white/5 p-5">
+            <div className="flex justify-between items-center pb-3 border-b border-white/5 mb-4">
+              <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest flex items-center gap-2 truncate">
+                <Settings className="h-4.5 w-4.5 text-violet-450" />
+                <Link 
+                  href={`/dashboard/rubrics?companyId=${companyId}`}
+                  className="hover:text-violet-400 hover:underline transition-colors"
+                >
+                  {company?.name || "Client"} Rubrics
+                </Link>
+              </h2>
+              <Link
+                href={`/dashboard/rubrics?companyId=${companyId}&rubricId=new`}
+                className="text-[10px] font-extrabold text-violet-400 hover:text-violet-300 hover:underline transition-colors"
+              >
+                + New
+              </Link>
+            </div>
+
+            {isLoading ? (
+              <div className="text-slate-500 text-xs py-8 text-center animate-pulse">Loading rubrics...</div>
+            ) : rubrics.length === 0 ? (
+              <div className="text-slate-500 text-xs py-8 text-center">No rubrics registered for this company.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left text-xs">
+                  <thead>
+                    <tr className="bg-slate-950/65 border-b border-white/5 text-slate-500 uppercase tracking-widest text-[9px] font-bold">
+                      <th className="p-3">ID</th>
+                      <th className="p-3">Name</th>
+                      <th className="p-3 text-right">Last Activity</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {rubrics.map((rubric) => {
+                      return (
+                        <tr 
+                          key={rubric.id} 
+                          onClick={() => router.push(`/dashboard/rubrics?companyId=${companyId}&rubricId=${rubric.id}`)}
+                          className="hover:bg-white/[0.02] active:bg-white/[0.04] transition-colors cursor-pointer group text-slate-350"
+                        >
+                          <td className="p-3 font-mono text-[9px] text-slate-450">
+                            {rubric.id.substring(0, 8)}
+                          </td>
+                          <td className="p-3 font-bold text-slate-200 group-hover:text-violet-400 transition-colors truncate max-w-[120px]" title={rubric.title}>
+                            {rubric.title}
+                          </td>
+                          <td className="p-3 text-right text-slate-400">
+                            {rubricLastActivity[rubric.id] ? (
+                              <span className="inline-flex items-center gap-1.5 justify-end">
+                                <Clock className="h-3.5 w-3.5 text-slate-500" />
+                                {formatRelativeTime(rubricLastActivity[rubric.id])} ago
+                              </span>
+                            ) : (
+                              <span className="text-slate-500 italic text-[10px]">No activity</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Evaluation Sessions (3/5 width) */}
         <div className="lg:col-span-3 space-y-4">
           <div className="glass-card rounded-xl border border-white/5 p-5">
             <div className="flex justify-between items-center pb-3 border-b border-white/5 mb-4">
@@ -573,75 +642,6 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                     </div>
                   </div>
                 )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Column: Client Rubrics (2/5 width) */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="glass-card rounded-xl border border-white/5 p-5">
-            <div className="flex justify-between items-center pb-3 border-b border-white/5 mb-4">
-              <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest flex items-center gap-2 truncate">
-                <Settings className="h-4.5 w-4.5 text-violet-450" />
-                <Link 
-                  href={`/dashboard/rubrics?companyId=${companyId}`}
-                  className="hover:text-violet-400 hover:underline transition-colors"
-                >
-                  {company?.name || "Client"} Rubrics
-                </Link>
-              </h2>
-              <Link
-  href={`/dashboard/rubrics?companyId=${companyId}&rubricId=new`}
-  className="text-[10px] font-extrabold text-violet-400 hover:text-violet-300 hover:underline transition-colors"
->
-                + New
-              </Link>
-            </div>
-
-            {isLoading ? (
-              <div className="text-slate-500 text-xs py-8 text-center animate-pulse">Loading rubrics...</div>
-            ) : rubrics.length === 0 ? (
-              <div className="text-slate-500 text-xs py-8 text-center">No rubrics registered for this company.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left text-xs">
-                  <thead>
-                    <tr className="bg-slate-950/65 border-b border-white/5 text-slate-500 uppercase tracking-widest text-[9px] font-bold">
-                      <th className="p-3">ID</th>
-                      <th className="p-3">Name</th>
-                      <th className="p-3 text-right">Last Activity</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {rubrics.map((rubric) => {
-                      return (
-                        <tr 
-                          key={rubric.id} 
-                          onClick={() => router.push(`/dashboard/rubrics?companyId=${companyId}&rubricId=${rubric.id}`)}
-                          className="hover:bg-white/[0.02] active:bg-white/[0.04] transition-colors cursor-pointer group text-slate-350"
-                        >
-                          <td className="p-3 font-mono text-[9px] text-slate-450">
-                            {rubric.id.substring(0, 8)}
-                          </td>
-                          <td className="p-3 font-bold text-slate-200 group-hover:text-violet-400 transition-colors truncate max-w-[120px]" title={rubric.title}>
-                            {rubric.title}
-                          </td>
-                          <td className="p-3 text-right text-slate-400">
-                            {rubricLastActivity[rubric.id] ? (
-                              <span className="inline-flex items-center gap-1.5 justify-end">
-                                <Clock className="h-3.5 w-3.5 text-slate-500" />
-                                {formatRelativeTime(rubricLastActivity[rubric.id])} ago
-                              </span>
-                            ) : (
-                              <span className="text-slate-500 italic text-[10px]">No activity</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
               </div>
             )}
           </div>
