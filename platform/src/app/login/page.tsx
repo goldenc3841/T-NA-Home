@@ -119,18 +119,9 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
-                Password
-              </label>
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-[11px] text-[#E05D38] hover:text-[#C54824] font-bold transition-colors cursor-pointer"
-              >
-                Forgot password?
-              </button>
-            </div>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
+              Password
+            </label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A6C62]" />
               <input
@@ -153,6 +144,16 @@ export default function LoginPage() {
             {isLoading ? "Signing in..." : "Sign In"}
           </button>
         </form>
+
+        <div className="mt-5 text-center">
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            className="text-xs text-[#E05D38] hover:text-[#C54824] font-bold transition-colors cursor-pointer"
+          >
+            Forgot password?
+          </button>
+        </div>
       </div>
     </div>
   );
