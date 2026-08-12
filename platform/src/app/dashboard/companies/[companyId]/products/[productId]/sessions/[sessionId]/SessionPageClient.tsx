@@ -576,7 +576,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                           onClick={() => toggleRowExpand(turn.id)}
                           className={`transition-colors cursor-pointer ${
                             isMismatched 
-                              ? "bg-rose-950/20 hover:bg-rose-900/30 text-rose-200" 
+                              ? "bg-red-500/15 hover:bg-red-500/20 text-red-200" 
                               : "hover:bg-white/[0.01] text-slate-350"
                           }`}
                         >
@@ -587,7 +587,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                               <ChevronDown className="h-4 w-4 text-slate-500" />
                             )}
                           </td>
-                          <td className={`p-4 font-mono font-bold ${isMismatched ? "text-rose-450" : "text-slate-300"}`}>
+                          <td className={`p-4 font-mono font-bold ${isMismatched ? "text-red-400" : "text-slate-300"}`}>
                             {convoId}
                           </td>
                           <td className="p-4 max-w-xs truncate text-slate-400 font-mono text-[11px]" title={turn.prompt}>
@@ -603,7 +603,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                           {/* Render matching score values for each dynamic rubric header */}
                           {criteria.map((crit) => {
                             const score = turn.scores?.find(s => s.criterion_id === crit.id || s.criterion?.name === crit.name);
-                            const val = score?.value || "N/A";
+                            const val = score?.value || "";
                             const isPass = val.toUpperCase() === "PASS" || val.toUpperCase() === "TRUE";
                             const isFail = val.toUpperCase() === "FAIL" || val.toUpperCase() === "FALSE";
                             
