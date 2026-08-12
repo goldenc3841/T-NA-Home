@@ -206,13 +206,13 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto py-2">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-900/40 via-indigo-900/30 to-slate-900/40 border border-white/5 p-6 md:p-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#E05D38]/10 via-[#F5E590]/20 to-[#FAF6EE] border border-[#E3DBCF] p-6 md:p-8">
         <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
-          <Sparkles className="h-24 w-24 text-violet-400" />
+          <Sparkles className="h-24 w-24 text-[#E05D38]" />
         </div>
         <div className="relative z-10 space-y-1">
-          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-            Welcome, <span className="bg-gradient-to-r from-violet-400 to-indigo-300 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#E05D38] tracking-tight font-serif">
+            Welcome, <span className="text-[#2B231F] font-serif">
               {profile?.full_name 
                 ? (profile.full_name.includes("@") 
                     ? profile.full_name.split("@")[0].split(".")[0].charAt(0).toUpperCase() + profile.full_name.split("@")[0].split(".")[0].slice(1)
@@ -224,23 +224,23 @@ export default function DashboardPage() {
       </div>
 
       {/* Section: Recently Evaluated Companies */}
-      <div className="space-y-3">
-        <h2 className="text-xs uppercase font-bold tracking-widest text-slate-400 flex items-center gap-2">
-          <Building className="h-3.5 w-3.5 text-violet-400" />
+      <div className="space-y-3 font-sans">
+        <h2 className="text-xs uppercase font-extrabold tracking-widest text-[#7A6C62] flex items-center gap-2">
+          <Building className="h-3.5 w-3.5 text-[#E05D38]" />
           Recently Evaluated Companies
         </h2>
 
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((n) => (
-              <div key={n} className="glass-card h-28 rounded-xl border border-white/5 p-4 animate-pulse flex flex-col justify-between">
-                <div className="h-4 bg-slate-800 rounded w-2/3" />
-                <div className="h-3 bg-slate-800 rounded w-1/2" />
+              <div key={n} className="glass-card h-28 rounded-xl border border-[#E3DBCF] p-4 animate-pulse flex flex-col justify-between">
+                <div className="h-4 bg-[#EDE7DC] rounded w-2/3" />
+                <div className="h-3 bg-[#EDE7DC] rounded w-1/2" />
               </div>
             ))}
           </div>
         ) : recentCompanies.length === 0 ? (
-          <div className="glass-card rounded-xl border border-white/5 p-6 text-center text-slate-500 text-xs">
+          <div className="glass-card rounded-xl border border-[#E3DBCF] p-6 text-center text-[#7A6C62] text-xs">
             No evaluated companies yet. Perform evaluations with the Chrome extension to see them here.
           </div>
         ) : (
@@ -249,23 +249,23 @@ export default function DashboardPage() {
               <Link
                 key={company.id}
                 href={`/dashboard/companies/${company.id}`}
-                className="glass-card w-full rounded-xl border border-white/5 p-4 hover:border-violet-500/40 hover:bg-violet-600/[0.03] transition-all duration-300 group/pill"
+                className="glass-card w-full rounded-xl border border-[#E3DBCF] p-4 hover:border-[#E05D38] hover:bg-white transition-all duration-300 group/pill shadow-sm"
               >
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
-                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Client</div>
-                    <div className="text-sm font-bold text-slate-200 mt-0.5 truncate group-hover/pill:text-violet-400 transition-colors">
+                    <div className="text-[10px] text-[#7A6C62] font-bold uppercase tracking-wider">Client</div>
+                    <div className="text-sm font-bold text-[#2B231F] mt-0.5 truncate group-hover/pill:text-[#E05D38] transition-colors">
                       {company.name}
                     </div>
                   </div>
-                  <div className="h-8 w-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-450 shrink-0">
+                  <div className="h-8 w-8 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 flex items-center justify-center text-[#E05D38] shrink-0">
                     <Building className="h-4 w-4" />
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center gap-1.5 text-[10px] text-slate-400">
-                  <Clock className="h-3.5 w-3.5 text-slate-500" />
-                  <span>Last Activity: <span className="font-semibold text-slate-300">{formatRelativeTime(company.lastActivity)}</span></span>
+                <div className="mt-4 flex items-center gap-1.5 text-[10px] text-[#7A6C62]">
+                  <Clock className="h-3.5 w-3.5 text-[#7A6C62]" />
+                  <span>Last Activity: <span className="font-semibold text-[#2B231F]">{formatRelativeTime(company.lastActivity)}</span></span>
                 </div>
               </Link>
             ))}
@@ -274,9 +274,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Section: Recent Evaluations Tree */}
-      <div className="space-y-3">
-        <h2 className="text-xs uppercase font-bold tracking-widest text-slate-400 flex items-center gap-2">
-          <Layers className="h-3.5 w-3.5 text-violet-400" />
+      <div className="space-y-3 font-sans">
+        <h2 className="text-xs uppercase font-extrabold tracking-widest text-[#7A6C62] flex items-center gap-2">
+          <Layers className="h-3.5 w-3.5 text-[#E05D38]" />
           Recent Evaluations
         </h2>
 
