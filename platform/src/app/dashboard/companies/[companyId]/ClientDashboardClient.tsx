@@ -89,6 +89,20 @@ interface EvaluationSession {
   }>;
 }
 
+function getFormattedDateName(d = new Date()): string {
+  const months = ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."];
+  const month = months[d.getMonth()];
+  const day = d.getDate();
+  const year = d.getFullYear();
+  
+  let suffix = "th";
+  if (day % 10 === 1 && day !== 11) suffix = "st";
+  else if (day % 10 === 2 && day !== 12) suffix = "nd";
+  else if (day % 10 === 3 && day !== 13) suffix = "rd";
+  
+  return `${month} ${day}${suffix}, ${year}`;
+}
+
 interface ClientDashboardProps {
   companyId: string;
 }
@@ -121,6 +135,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
 
   const [isStartEvalModalOpen, setIsStartEvalModalOpen] = useState(false);
   const [newSessionName, setNewSessionName] = useState("");
+  const [newSessionDesc, setNewSessionDesc] = useState("");
   const [selectedFeatureId, setSelectedFeatureId] = useState("");
   const [selectedRubricVersionId, setSelectedRubricVersionId] = useState("");
 
@@ -276,7 +291,8 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
           feature_id: selectedFeatureId,
           rubric_version_id: selectedRubricVersionId,
           evaluator_id: profile.id,
-          name: newSessionName.trim()
+          name: newSessionName.trim(),
+          description: newSessionDesc.trim() || null
         })
         .select()
         .single();
@@ -291,6 +307,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
           setSessions(sessionsData || []);
         }
         setNewSessionName("");
+        setNewSessionDesc("");
         setIsStartEvalModalOpen(false);
       }
     } catch (err: any) {
@@ -463,6 +480,8 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                   }
                   setSelectedFeatureId(features[0].id);
                   setSelectedRubricVersionId(activeRubricVersions[0].id);
+                  setNewSessionName(getFormattedDateName());
+                  setNewSessionDesc("");
                   setIsStartEvalModalOpen(true);
                 }}
                 className="px-3 py-1.5 rounded-lg bg-violet-600/15 border border-violet-500/20 text-violet-450 hover:bg-violet-600 hover:text-white transition-all text-[11px] font-bold cursor-pointer"
@@ -484,6 +503,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                     <thead>
                       <tr className="bg-slate-950/65 border-b border-white/5 text-slate-500 uppercase tracking-widest text-[9px] font-bold">
                         <th className="p-3">ID</th>
+                        <th className="p-3">Session Name</th>
                         <th className="p-3">Product</th>
                         <th className="p-3">Rubric</th>
                         <th className="p-3">Created</th>
@@ -499,6 +519,9 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                         >
                           <td className="p-3 font-mono text-[10px] text-slate-400">
                             {session.id.substring(0, 8)}
+                          </td>
+                          <td className="p-3 font-semibold text-slate-200 truncate max-w-[130px]" title={session.name}>
+                            {session.name}
                           </td>
                           <td className="p-3">
                             <span 
@@ -864,7 +887,19 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                   required
                   value={newSessionName}
                   onChange={(e) => setNewSessionName(e.target.value)}
-                  placeholder="e.g. Ingestion QA - July 20"
+                  placeholder="e.g. Aug. 11th, 2026"
+                  className="w-full bg-slate-950/40 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-650 focus:outline-none focus:border-violet-500 transition-colors"
+                  disabled={isActionLoading}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-slate-450 block">Session Description (Optional)</label>
+                <textarea
+                  rows={2}
+                  value={newSessionDesc}
+                  onChange={(e) => setNewSessionDesc(e.target.value)}
+                  placeholder="Optional notes or context for this evaluation session..."
                   className="w-full bg-slate-950/40 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-650 focus:outline-none focus:border-violet-500 transition-colors"
                   disabled={isActionLoading}
                 />
