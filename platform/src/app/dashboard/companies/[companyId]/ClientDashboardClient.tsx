@@ -475,9 +475,9 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
               </h2>
               <Link
                 href={`/dashboard/rubrics?companyId=${companyId}&rubricId=new`}
-                className="text-[10px] font-extrabold text-[#E05D38] hover:text-[#C54824] hover:underline transition-colors"
+                className="px-3 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-[11px] font-bold cursor-pointer inline-flex items-center gap-1"
               >
-                + New
+                + New Rubric
               </Link>
             </div>
 

@@ -299,7 +299,7 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
           </button>
           <Link
             href={`/dashboard/rubrics?companyId=${companyId}`}
-            className="px-3.5 py-2 rounded-lg bg-white hover:bg-[#FAF6EE] text-[#2B231F] text-xs font-bold border border-[#E3DBCF] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+            className="px-3.5 py-2 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
             <Plus className="h-4 w-4" />
             Create New Rubric
