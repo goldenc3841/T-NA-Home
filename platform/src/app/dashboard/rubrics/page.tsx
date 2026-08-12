@@ -574,11 +574,8 @@ export default function RubricsPage() {
     try {
       let activeRubricId = rubric?.id;
 
-      // Clean the title by removing " (DRAFT)" if present
-      let cleanTitle = rubricTitle.trim();
-      if (cleanTitle.endsWith(" (DRAFT)")) {
-        cleanTitle = cleanTitle.substring(0, cleanTitle.length - 8).trim();
-      }
+      // Clean the title by removing "(DRAFT)" if present
+      let cleanTitle = rubricTitle.trim().replace(/\s*\(DRAFT\)\s*/gi, "").trim();
 
       // 1. Create or update the rubric record
       if (!activeRubricId) {
@@ -658,6 +655,7 @@ export default function RubricsPage() {
       }
 
       // Reset baseline state and update title
+      setIsDirty(false);
       setRubricTitle(cleanTitle);
       setLastAutosavedState({
         title: cleanTitle,
