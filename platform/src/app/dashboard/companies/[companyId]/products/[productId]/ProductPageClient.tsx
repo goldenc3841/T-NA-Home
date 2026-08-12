@@ -400,52 +400,52 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
       {isStartEvalModalOpen && (
         <>
           <div 
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 animate-in fade-in duration-200"
+            className="fixed inset-0 bg-[#2B231F]/40 backdrop-blur-sm z-50 animate-in fade-in duration-200"
             onClick={() => setIsStartEvalModalOpen(false)}
           />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-slate-900 border border-white/10 rounded-xl p-6 shadow-2xl z-50 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-white/5 mb-4">
-              <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
-                <FileText className="h-4 w-4 text-violet-500" />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#FAF6EE] border border-[#E3DBCF] rounded-2xl p-6 shadow-2xl z-50 animate-in zoom-in-95 duration-200 font-sans">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E3DBCF] mb-4">
+              <h3 className="text-base font-bold text-[#2B231F] font-serif uppercase tracking-wider flex items-center gap-2">
+                <FileText className="h-4.5 w-4.5 text-[#E05D38]" />
                 Start New Evaluation
               </h3>
               <button 
                 onClick={() => setIsStartEvalModalOpen(false)}
-                className="text-slate-500 hover:text-white transition-colors cursor-pointer"
+                className="text-[#7A6C62] hover:text-[#2B231F] transition-colors cursor-pointer"
               >
                 <X className="h-4.5 w-4.5" />
               </button>
             </div>
-            <form onSubmit={handleStartEvaluation} className="space-y-4">
+            <form onSubmit={handleStartEvaluation} className="space-y-4 font-sans">
               <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-slate-450 block">Session Name</label>
+                <label className="text-[10px] uppercase font-bold tracking-wider text-[#7A6C62] block">Session Name</label>
                 <input
                   type="text"
                   required
                   value={newSessionName}
                   onChange={(e) => setNewSessionName(e.target.value)}
                   placeholder="e.g. Session QA - July 20"
-                  className="w-full bg-slate-950/40 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-650 focus:outline-none focus:border-violet-500 transition-colors"
+                  className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38] transition-colors shadow-sm"
                   disabled={isActionLoading}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-slate-450 block">Product</label>
+                <label className="text-[10px] uppercase font-bold tracking-wider text-[#7A6C62] block">Product</label>
                 <input
                   type="text"
                   value={productName}
                   disabled
-                  className="w-full bg-slate-950/20 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-500 opacity-60"
+                  className="w-full bg-white/60 border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#7A6C62] opacity-80"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-slate-450 block">Select Rubric</label>
+                <label className="text-[10px] uppercase font-bold tracking-wider text-[#7A6C62] block">Select Rubric</label>
                 <select
                   value={selectedRubricVersionId}
                   onChange={(e) => setSelectedRubricVersionId(e.target.value)}
-                  className="w-full bg-slate-950/40 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-violet-500 transition-colors"
+                  className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] focus:outline-none focus:border-[#E05D38] transition-colors shadow-sm cursor-pointer"
                   disabled={isActionLoading}
                 >
                   {activeRubricVersions.map(r => (
@@ -454,11 +454,11 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
                 </select>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-white/5 mt-4">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#E3DBCF] mt-4">
                 <button
                   type="button"
                   onClick={() => setIsStartEvalModalOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-950 hover:bg-slate-800 text-xs font-semibold text-slate-350 border border-white/5 transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-lg bg-white hover:bg-[#EDE7DC] text-xs font-bold text-[#2B231F] border border-[#E3DBCF] transition-colors cursor-pointer"
                   disabled={isActionLoading}
                 >
                   Cancel
@@ -466,7 +466,7 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
                 <button
                   type="submit"
                   disabled={isActionLoading}
-                  className="px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-semibold text-white transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-lg bg-[#E05D38] hover:bg-[#C54824] text-xs font-bold text-white transition-all cursor-pointer shadow-sm"
                 >
                   {isActionLoading ? "Starting..." : "Start Session"}
                 </button>
