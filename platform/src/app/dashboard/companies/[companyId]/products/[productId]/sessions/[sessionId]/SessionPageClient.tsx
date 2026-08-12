@@ -243,6 +243,74 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
     return !hasAll || !hasNoExtras;
   };
 
+  // Inline edit score for a specific turn and rubric criterion
+  async function handleUpdateScore(turnId: string, criterionId: string, newValue: string) {
+    const targetCriterion = criteria.find(c => c.id === criterionId);
+
+    // 1. Update local turns state immediately for snappy responsive UI
+    setTurns(prevTurns => {
+      return prevTurns.map(t => {
+        if (t.id !== turnId) return t;
+
+        const currentScores = t.scores || [];
+        const scoreIndex = currentScores.findIndex(
+          s => s.criterion_id === criterionId || (targetCriterion && s.criterion?.name === targetCriterion.name)
+        );
+
+        let updatedScores = [...currentScores];
+
+        if (scoreIndex >= 0) {
+          updatedScores[scoreIndex] = {
+            ...updatedScores[scoreIndex],
+            value: newValue
+          };
+        } else {
+          updatedScores.push({
+            id: `temp-${Date.now()}`,
+            criterion_id: criterionId,
+            value: newValue,
+            notes: "",
+            criterion: targetCriterion ? {
+              id: targetCriterion.id,
+              name: targetCriterion.name
+            } : undefined
+          });
+        }
+
+        return {
+          ...t,
+          scores: updatedScores
+        };
+      });
+    });
+
+    try {
+      const turnObj = turns.find(t => t.id === turnId);
+      const existingScore = turnObj?.scores?.find(
+        s => s.criterion_id === criterionId || (targetCriterion && s.criterion?.name === targetCriterion.name)
+      );
+
+      if (existingScore && existingScore.id && !existingScore.id.startsWith("temp-")) {
+        const { error } = await supabase
+          .from("scores")
+          .update({ value: newValue })
+          .eq("id", existingScore.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("scores")
+          .insert({
+            turn_id: turnId,
+            criterion_id: criterionId,
+            value: newValue
+          });
+        if (error) throw error;
+      }
+    } catch (err: any) {
+      console.error("Error updating rubric score:", err);
+    }
+  }
+
   // Delete turn row from database and local state
   const handleDeleteTurn = async (turnId: string) => {
     if (!window.confirm("Are you sure you want to delete this evaluation row? This action cannot be undone.")) {
@@ -649,25 +717,62 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                             {getRubricUsed(turn)}
                           </td>
 
-                          {/* Render matching score values for each dynamic rubric header */}
+                          {/* Interactive Inline Editable Rubric Score Fields */}
                           {criteria.map((crit) => {
                             const score = turn.scores?.find(s => s.criterion_id === crit.id || s.criterion?.name === crit.name);
                             const val = score?.value || "";
-                            const isPass = val.toUpperCase() === "PASS" || val.toUpperCase() === "TRUE";
-                            const isFail = val.toUpperCase() === "FAIL" || val.toUpperCase() === "FALSE";
                             
                             return (
-                              <td key={crit.id} className="p-4 font-semibold">
-                                {isPass ? (
-                                  <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
-                                    {val}
-                                  </span>
-                                ) : isFail ? (
-                                  <span className="px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/30 text-rose-700 text-[10px] font-bold uppercase tracking-wider animate-pulse">
-                                    {val}
-                                  </span>
+                              <td key={crit.id} className="p-3 font-semibold" onClick={(e) => e.stopPropagation()}>
+                                {crit.field_type === "boolean" ? (
+                                  <select
+                                    value={val}
+                                    onChange={(e) => handleUpdateScore(turn.id, crit.id, e.target.value)}
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer outline-none shadow-sm ${
+                                      val.toUpperCase() === "PASS" || val.toUpperCase() === "TRUE"
+                                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/20"
+                                        : val.toUpperCase() === "FAIL" || val.toUpperCase() === "FALSE"
+                                        ? "bg-rose-500/10 border-rose-500/30 text-rose-700 hover:bg-rose-500/20"
+                                        : "bg-white border-[#E3DBCF] text-[#2B231F] hover:border-[#E05D38]"
+                                    }`}
+                                  >
+                                    <option value="">Select...</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                  </select>
+                                ) : crit.field_type === "rating" ? (
+                                  <select
+                                    value={val}
+                                    onChange={(e) => handleUpdateScore(turn.id, crit.id, e.target.value)}
+                                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white border border-[#E3DBCF] text-[#2B231F] focus:border-[#E05D38] hover:border-[#E05D38] cursor-pointer shadow-sm outline-none transition-all"
+                                  >
+                                    <option value="">-</option>
+                                    {Array.from(
+                                      { length: Math.max(1, (crit.field_options?.max || 5) - (crit.field_options?.min || 1) + 1) },
+                                      (_, i) => (crit.field_options?.min || 1) + i
+                                    ).map(num => (
+                                      <option key={num} value={num.toString()}>{num}</option>
+                                    ))}
+                                  </select>
+                                ) : crit.field_type === "select" ? (
+                                  <select
+                                    value={val}
+                                    onChange={(e) => handleUpdateScore(turn.id, crit.id, e.target.value)}
+                                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white border border-[#E3DBCF] text-[#2B231F] focus:border-[#E05D38] hover:border-[#E05D38] cursor-pointer shadow-sm outline-none transition-all max-w-[130px] truncate"
+                                  >
+                                    <option value="">Select Option...</option>
+                                    {(Array.isArray(crit.field_options) ? crit.field_options : []).map(opt => (
+                                      <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                  </select>
                                 ) : (
-                                  <span className="text-[#2B231F]">{val}</span>
+                                  <input
+                                    type="text"
+                                    value={val}
+                                    onChange={(e) => handleUpdateScore(turn.id, crit.id, e.target.value)}
+                                    placeholder="Edit..."
+                                    className="w-24 px-2 py-1 rounded-lg text-xs font-semibold bg-white border border-[#E3DBCF] text-[#2B231F] focus:border-[#E05D38] shadow-sm outline-none transition-all placeholder-[#7A6C62]"
+                                  />
                                 )}
                               </td>
                             );
