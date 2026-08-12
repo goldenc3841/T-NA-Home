@@ -33,8 +33,9 @@
 }
 
 @theme {
-  --font-serif: var(--font-header-serif), var(--font-instrument-serif), Georgia, serif;
-  --font-header: var(--font-header-serif), var(--font-instrument-serif), Georgia, serif;
+  --font-serif: var(--font-dm-serif), var(--font-instrument-serif), var(--font-header-serif), Georgia, serif;
+  --font-header: var(--font-dm-serif), var(--font-instrument-serif), var(--font-header-serif), Georgia, serif;
+  --font-sans: var(--font-jakarta-sans), var(--font-geist-sans), system-ui, sans-serif;
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -64,10 +65,17 @@
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  font-family: var(--font-jakarta-sans), var(--font-geist-sans), system-ui, sans-serif;
 }
 
-h1, h2, h3, .font-serif, .font-header, .font-display {
-  font-family: var(--font-header-serif), var(--font-instrument-serif), Georgia, serif;
+/* Heading and Featured Texts: match "I'd Love Another Baby, But..." */
+h1, h2, h3, h4, .font-serif, .font-header, .font-display, .heading-featured {
+  font-family: var(--font-dm-serif), var(--font-instrument-serif), var(--font-header-serif), Georgia, serif;
+}
+
+/* Subheaders and small texts: match "LET'S FIGURE THIS PARENTING THING OUT TOGETHER" */
+p, span, label, th, td, button, input, select, textarea, .sub-header, .text-small {
+  font-family: var(--font-jakarta-sans), var(--font-geist-sans), system-ui, sans-serif;
 }
 
 /* Glassmorphism custom classes */

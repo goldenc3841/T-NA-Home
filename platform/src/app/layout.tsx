@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display, Instrument_Serif } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display, Instrument_Serif, DM_Serif_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,6 +25,19 @@ const instrumentSerif = Instrument_Serif({
   display: "swap",
 });
 
+const dmSerifDisplay = DM_Serif_Display({
+  weight: "400",
+  variable: "--font-dm-serif",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-jakarta-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "TNA Home Platform",
   description: "AI Evaluation & Rubric Platform",
@@ -38,9 +51,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${headerSerif.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${headerSerif.variable} ${instrumentSerif.variable} ${dmSerifDisplay.variable} ${plusJakartaSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>
   );
 }
