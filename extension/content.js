@@ -445,29 +445,30 @@
         background: rgba(224, 93, 56, 0.4);
         cursor: not-allowed;
         color: rgba(255, 255, 255, 0.7);
-      }
-        cursor: not-allowed;
-        color: var(--text-muted);
-      }
-
       .toast {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(16, 185, 129, 0.95);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        font-weight: 600;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        animation: slideInUp 0.3s ease-out;
+        bottom: 24px;
+        right: 24px;
+        background: linear-gradient(135deg, #059669, #10b981);
+        color: #ffffff;
+        padding: 14px 22px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 0.01em;
+        box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         pointer-events: auto;
-        z-index: 1001;
+        z-index: 100000;
       }
 
       @keyframes slideInUp {
-        from { transform: translateY(100%); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+        from { transform: translateY(100%) scale(0.9); opacity: 0; }
+        to { transform: translateY(0) scale(1); opacity: 1; }
       }
     `;
 
@@ -1167,11 +1168,14 @@
 
       showToast("Evaluation Saved Successfully!");
       
-      // Reset prompt and response text fields for the next turn
+      // Reset prompt and response text fields for the next evaluation turn
       capturedPrompt = "";
       capturedResponse = "";
       shadowRoot.getElementById("tna-prompt-text").value = "";
       shadowRoot.getElementById("tna-response-text").value = "";
+
+      // Reset rubric scoring fields back to empty default states
+      renderRubricFields();
       
       // If a new session was created on the backend, update selectedSessionId to match it
       if (result && result.session_id) {
@@ -1194,13 +1198,19 @@
   function showToast(message) {
     const toast = document.createElement("div");
     toast.className = "toast";
-    toast.textContent = message;
+    toast.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      <span>${message}</span>
+    `;
     shadowRoot.appendChild(toast);
     
     setTimeout(() => {
-      toast.style.transition = "opacity 0.5s";
+      toast.style.transition = "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)";
       toast.style.opacity = "0";
-      setTimeout(() => toast.remove(), 500);
-    }, 2500);
+      toast.style.transform = "translateY(20px) scale(0.95)";
+      setTimeout(() => toast.remove(), 400);
+    }, 2800);
   }
 })();

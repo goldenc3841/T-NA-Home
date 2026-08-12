@@ -18,7 +18,8 @@ import {
   ChevronLeft,
   Settings,
   FileText,
-  Trash2
+  Trash2,
+  CheckCircle2
 } from "lucide-react";
 
 interface Company {
@@ -138,6 +139,15 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
   const [newSessionDesc, setNewSessionDesc] = useState("");
   const [selectedFeatureId, setSelectedFeatureId] = useState("");
   const [selectedRubricVersionId, setSelectedRubricVersionId] = useState("");
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  function triggerToast(msg: string) {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3000);
+  }
 
   async function fetchProfile() {
     try {
@@ -309,6 +319,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
         setNewSessionName("");
         setNewSessionDesc("");
         setIsStartEvalModalOpen(false);
+        triggerToast("Evaluation Session Started Successfully!");
       }
     } catch (err: any) {
       alert("Error creating evaluation session: " + err.message);
@@ -953,6 +964,14 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
             </form>
           </div>
         </>
+      )}
+
+      {/* Green Confirmation Toast Popup */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-[100000] bg-gradient-to-r from-emerald-600 to-emerald-500 text-white px-5 py-3.5 rounded-xl shadow-2xl border border-white/20 font-bold text-xs flex items-center gap-2.5 animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto">
+          <CheckCircle2 className="h-4.5 w-4.5 text-white shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
       )}
     </div>
   );
