@@ -955,26 +955,26 @@ export default function RubricsPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+        <h1 className="text-3xl font-bold text-[#E05D38] tracking-tight flex items-center gap-3 font-serif">
           Rubrics Builder
         </h1>
-        <p className="text-slate-400 mt-1 text-sm">
+        <p className="text-[#7A6C62] mt-1 text-xs">
           Design custom evaluation criteria and input fields.
         </p>
       </div>
 
       {/* Select Company Filter */}
-      <div className="glass-card rounded-xl border border-white/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="glass-card rounded-xl border border-[#E3DBCF] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white shadow-sm">
         <div className="flex items-center gap-3">
-          <Building className="h-5 w-5 text-violet-400" />
-          <span className="text-sm font-semibold text-slate-200">Manage Workspace For:</span>
+          <Building className="h-5 w-5 text-[#E05D38]" />
+          <span className="text-sm font-bold text-[#2B231F]">Manage Workspace For:</span>
           <select
             value={selectedCompanyId}
             onChange={(e) => setSelectedCompanyId(e.target.value)}
-            className="bg-slate-900/60 border border-white/5 rounded-lg px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-violet-500"
+            className="bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs font-semibold text-[#2B231F] focus:outline-none focus:border-[#E05D38] shadow-sm cursor-pointer"
           >
             <option value="">Select Company...</option>
             {companies.map(c => (
@@ -1017,7 +1017,7 @@ export default function RubricsPage() {
                       setIsDirty(true);
                     }}
                     placeholder="e.g. Standard Text Quality Rubric"
-                    className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38]"
+                    className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38] shadow-sm"
                   />
                 </div>
 
@@ -1033,13 +1033,13 @@ export default function RubricsPage() {
                     }}
                     placeholder="Describe how evaluators should calibrate these scores..."
                     rows={2}
-                    className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38]"
+                    className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38] shadow-sm"
                   />
                 </div>
               </div>
 
               {/* Criterion Inserter */}
-              <div className="p-4 bg-[#FAF6EE] rounded-xl border border-[#E3DBCF] space-y-4">
+              <div className="p-4 bg-[#FAF6EE] rounded-xl border border-[#E3DBCF] space-y-4 shadow-sm">
                 <h3 className="text-xs font-bold text-[#2B231F]">
                   {editingIndex !== null ? "Edit Evaluation Field / Criterion" : "Add Evaluation Field / Criterion"}
                 </h3>
@@ -1051,16 +1051,16 @@ export default function RubricsPage() {
                       value={critName}
                       onChange={(e) => setCritName(e.target.value)}
                       placeholder="e.g. Factuality"
-                      className="w-full bg-slate-950/60 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                      className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38]"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[9px] uppercase tracking-wider font-semibold text-slate-400">Input Type</label>
+                    <label className="text-[9px] uppercase tracking-wider font-semibold text-[#7A6C62]">Input Type</label>
                     <select
                       value={critType}
                       onChange={(e) => setCritType(e.target.value as "rating" | "text" | "boolean" | "select")}
-                      className="w-full bg-slate-950/60 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-violet-500"
+                      className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] focus:outline-none focus:border-[#E05D38]"
                     >
                       <option value="rating">Rating (1-5 Slider)</option>
                       <option value="boolean">Boolean Toggle (Pass/Fail)</option>
@@ -1071,13 +1071,13 @@ export default function RubricsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[9px] uppercase tracking-wider font-semibold text-slate-400">Description / Guidelines</label>
+                  <label className="text-[9px] uppercase tracking-wider font-semibold text-[#7A6C62]">Description / Guidelines</label>
                   <input
                     type="text"
                     value={critDesc}
                     onChange={(e) => setCritDesc(e.target.value)}
                     placeholder="Provide evaluation calibration guidelines for this field..."
-                    className="w-full bg-slate-950/60 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                    className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38]"
                   />
                 </div>
 
@@ -1085,21 +1085,21 @@ export default function RubricsPage() {
                 {critType === "rating" && (
                   <div className="grid grid-cols-2 gap-4 pt-1">
                     <div className="space-y-1">
-                      <label className="text-[9px] uppercase tracking-wider font-semibold text-slate-400">Min Rating</label>
+                      <label className="text-[9px] uppercase tracking-wider font-semibold text-[#7A6C62]">Min Rating</label>
                       <input
                         type="number"
                         value={ratingMin}
                         onChange={(e) => setRatingMin(parseInt(e.target.value) || 1)}
-                        className="w-full bg-slate-950/60 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-violet-500"
+                        className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] focus:outline-none focus:border-[#E05D38]"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[9px] uppercase tracking-wider font-semibold text-slate-400">Max Rating</label>
+                      <label className="text-[9px] uppercase tracking-wider font-semibold text-[#7A6C62]">Max Rating</label>
                       <input
                         type="number"
                         value={ratingMax}
                         onChange={(e) => setRatingMax(parseInt(e.target.value) || 5)}
-                        className="w-full bg-slate-950/60 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-violet-500"
+                        className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] focus:outline-none focus:border-[#E05D38]"
                       />
                     </div>
                   </div>
@@ -1107,13 +1107,13 @@ export default function RubricsPage() {
 
                 {critType === "select" && (
                   <div className="space-y-1 pt-1">
-                    <label className="text-[9px] uppercase tracking-wider font-semibold text-slate-400">Choices (Comma-Separated)</label>
+                    <label className="text-[9px] uppercase tracking-wider font-semibold text-[#7A6C62]">Choices (Comma-Separated)</label>
                     <input
                       type="text"
                       value={selectOptions}
                       onChange={(e) => setSelectOptions(e.target.value)}
                       placeholder="e.g. Excellent, Good, Poor, Deficient"
-                      className="w-full bg-slate-950/60 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                      className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38]"
                     />
                   </div>
                 )}
@@ -1125,9 +1125,9 @@ export default function RubricsPage() {
                       id="crit-required-checkbox"
                       checked={critRequired}
                       onChange={(e) => setCritRequired(e.target.checked)}
-                      className="h-4 w-4 rounded border-white/10 bg-slate-950 text-violet-600 focus:ring-violet-550 focus:ring-offset-slate-950 focus:ring-2 cursor-pointer"
+                      className="h-4 w-4 rounded border-[#E3DBCF] bg-white text-[#E05D38] focus:ring-[#E05D38] cursor-pointer"
                     />
-                    <label htmlFor="crit-required-checkbox" className="text-xs font-semibold text-slate-300 cursor-pointer select-none">
+                    <label htmlFor="crit-required-checkbox" className="text-xs font-bold text-[#2B231F] cursor-pointer select-none">
                       Required
                     </label>
                   </div>
@@ -1146,14 +1146,14 @@ export default function RubricsPage() {
                           setSelectOptions("");
                           setCritRequired(true);
                         }}
-                        className="bg-slate-800 hover:bg-slate-700 text-slate-350 border border-slate-700 font-semibold rounded-lg text-xs py-2 px-4 transition-all cursor-pointer"
+                        className="bg-white hover:bg-[#EDE7DC] text-[#2B231F] border border-[#E3DBCF] font-bold rounded-lg text-xs py-2 px-4 transition-all cursor-pointer"
                       >
                         Cancel
                       </button>
                       <button
                         type="button"
                         onClick={handleUpdateCriterion}
-                        className="bg-violet-600 hover:bg-violet-550 text-white font-semibold rounded-lg text-xs py-2 px-4 transition-all shrink-0 cursor-pointer flex items-center justify-center gap-1.5"
+                        className="bg-[#E05D38] hover:bg-[#C54824] text-white font-bold rounded-lg text-xs py-2 px-4 transition-all shrink-0 cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                       >
                         Update Field
                       </button>
@@ -1162,7 +1162,7 @@ export default function RubricsPage() {
                     <button
                       type="button"
                       onClick={handleAddCriterion}
-                      className="bg-violet-600/10 hover:bg-violet-600/20 text-violet-400 border border-violet-500/20 font-semibold rounded-lg text-xs py-2 px-4 transition-all shrink-0 cursor-pointer flex items-center justify-center gap-1.5"
+                      className="bg-[#E05D38] hover:bg-[#C54824] text-white font-bold rounded-lg text-xs py-2 px-4 transition-all shrink-0 cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Add Field to Rubric
@@ -1173,10 +1173,10 @@ export default function RubricsPage() {
 
               {/* Display Builder Criteria List */}
               <div className="space-y-3">
-                <h3 className="text-xs font-bold text-slate-200">Rubric Structure Preview ({criteria.length} Fields)</h3>
+                <h3 className="text-xs font-bold text-[#2B231F]">Rubric Structure Preview ({criteria.length} Fields)</h3>
                 
                 {criteria.length === 0 ? (
-                  <div className="text-slate-500 text-xs py-8 text-center bg-slate-950/20 rounded-lg border border-dashed border-white/5">
+                  <div className="text-[#7A6C62] text-xs py-8 text-center bg-white rounded-lg border border-dashed border-[#E3DBCF]">
                     No criteria fields defined. Add a field above to build the rubric.
                   </div>
                 ) : (
@@ -1187,30 +1187,30 @@ export default function RubricsPage() {
                         onClick={() => handleEditCriterion(idx)}
                         className={`border rounded-lg p-4 flex justify-between items-center text-xs cursor-pointer transition-all ${
                           editingIndex === idx
-                            ? "bg-violet-600/10 border-violet-500/40"
-                            : "bg-slate-900/30 border-white/5 hover:border-white/10"
+                            ? "bg-[#E05D38]/10 border-[#E05D38]"
+                            : "bg-white border-[#E3DBCF] hover:border-[#E05D38] shadow-sm"
                         }`}
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-slate-200">{c.name}</span>
-                            <span className="px-2 py-0.5 rounded bg-violet-600/10 border border-violet-500/20 text-[9px] text-violet-400 uppercase font-bold">
+                            <span className="font-bold text-[#2B231F]">{c.name}</span>
+                            <span className="px-2 py-0.5 rounded bg-[#94BBE0]/30 border border-[#94BBE0]/60 text-[9px] text-[#1E3A5F] uppercase font-bold">
                               {c.field_type}
                             </span>
                             <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
                               c.is_required
-                                ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                                : "bg-slate-800 text-slate-450 border border-slate-700/50"
+                                ? "bg-rose-500/10 text-rose-700 border border-rose-500/30"
+                                : "bg-[#EDE7DC] text-[#7A6C62] border border-[#E3DBCF]"
                             }`}>
                               {c.is_required ? "Required" : "Optional"}
                             </span>
                           </div>
-                          {c.description && <div className="text-[10px] text-slate-400">{c.description}</div>}
+                          {c.description && <div className="text-[10px] text-[#7A6C62]">{c.description}</div>}
                           {c.field_type === "rating" && c.field_options && !Array.isArray(c.field_options) && (
-                            <div className="text-[9px] text-slate-500">Range: {c.field_options.min || 1} to {c.field_options.max || 5}</div>
+                            <div className="text-[9px] text-[#7A6C62]">Range: {c.field_options.min || 1} to {c.field_options.max || 5}</div>
                           )}
                           {c.field_type === "select" && (
-                            <div className="text-[9px] text-slate-500">Options: {Array.isArray(c.field_options) ? c.field_options.join(", ") : "None"}</div>
+                            <div className="text-[9px] text-[#7A6C62]">Options: {Array.isArray(c.field_options) ? c.field_options.join(", ") : "None"}</div>
                           )}
                         </div>
                         <button
@@ -1219,7 +1219,7 @@ export default function RubricsPage() {
                             e.stopPropagation();
                             handleRemoveCriterion(idx);
                           }}
-                          className="text-slate-500 hover:text-rose-400 p-1.5 rounded transition-colors shrink-0"
+                          className="text-[#7A6C62] hover:text-[#E05D38] p-1.5 rounded transition-colors shrink-0 hover:bg-[#E05D38]/10"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -1230,14 +1230,14 @@ export default function RubricsPage() {
               </div>
 
               {/* Save Panel */}
-              <div className="flex justify-between pt-4 border-t border-white/5 gap-4 flex-wrap">
+              <div className="flex justify-between pt-4 border-t border-[#E3DBCF] gap-4 flex-wrap">
                 <div>
                   {rubric && (
                     <button
                       type="button"
                       onClick={() => handleDeleteRubric(rubric.id)}
                       disabled={isSaving}
-                      className="bg-rose-950/20 hover:bg-rose-900/30 disabled:bg-slate-800/20 text-rose-450 border border-rose-900/35 hover:border-rose-800/40 font-semibold rounded-lg text-xs py-2.5 px-6 transition-all cursor-pointer flex items-center gap-2"
+                      className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 border border-rose-500/30 font-bold rounded-lg text-xs py-2.5 px-6 transition-all cursor-pointer flex items-center gap-2 shadow-sm"
                     >
                       <Trash2 className="h-4 w-4" />
                       Delete Rubric
@@ -1251,7 +1251,7 @@ export default function RubricsPage() {
                       type="button"
                       onClick={handleDuplicateCurrent}
                       disabled={isSaving}
-                      className="bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800/40 text-slate-350 border border-slate-700 hover:border-slate-600 font-semibold rounded-lg text-xs py-2.5 px-6 transition-all cursor-pointer flex items-center gap-2"
+                      className="bg-white hover:bg-[#FAF6EE] text-[#2B231F] border border-[#E3DBCF] font-bold rounded-lg text-xs py-2.5 px-6 transition-all cursor-pointer flex items-center gap-2 shadow-sm"
                     >
                       <Copy className="h-4 w-4" />
                       Duplicate
@@ -1261,7 +1261,7 @@ export default function RubricsPage() {
                     type="button"
                     onClick={handleSaveRubric}
                     disabled={isSaving || criteria.length === 0}
-                    className="bg-violet-600 hover:bg-violet-500 disabled:bg-violet-600/40 text-white font-semibold rounded-lg text-xs py-2.5 px-6 shadow-lg shadow-violet-500/20 transition-all cursor-pointer flex items-center gap-2"
+                    className="bg-[#E05D38] hover:bg-[#C54824] disabled:bg-[#E05D38]/40 text-white font-bold rounded-lg text-xs py-2.5 px-6 shadow-sm transition-all cursor-pointer flex items-center gap-2"
                   >
                     <Save className="h-4 w-4" />
                     {isSaving ? "Saving..." : "Save Rubric"}
@@ -1272,24 +1272,24 @@ export default function RubricsPage() {
           </div>
 
           {/* Right Column: Available Rubrics */}
-          <div className="space-y-6">
-            <div className="glass-card rounded-xl border border-white/5 p-6">
-              <div className="flex justify-between items-center border-b border-white/5 pb-3 mb-4">
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <FileSpreadsheet className="h-4.5 w-4.5 text-violet-400" />
+          <div className="space-y-6 font-sans">
+            <div className="glass-card rounded-xl border border-[#E3DBCF] p-6 shadow-sm">
+              <div className="flex justify-between items-center border-b border-[#E3DBCF] pb-3 mb-4">
+                <h2 className="text-base font-bold text-[#E05D38] flex items-center gap-2 font-serif">
+                  <FileSpreadsheet className="h-4.5 w-4.5 text-[#E05D38]" />
                   {clientName} Rubrics
                 </h2>
                 <button
                   type="button"
                   onClick={handleAddNewRubric}
-                  className="text-[10px] font-extrabold text-violet-400 hover:text-violet-300 transition-colors cursor-pointer"
+                  className="text-[10px] font-extrabold text-[#E05D38] hover:text-[#C54824] transition-colors cursor-pointer"
                 >
                   + New
                 </button>
               </div>
 
               {companyRubrics.length === 0 ? (
-                <div className="text-slate-500 text-xs py-8 text-center">
+                <div className="text-[#7A6C62] text-xs py-8 text-center">
                   No rubrics registered. Click "+ New" to add one.
                 </div>
               ) : (
@@ -1300,16 +1300,16 @@ export default function RubricsPage() {
                       <div
                         key={r.id}
                         onClick={() => router.push(`/dashboard/rubrics?companyId=${selectedCompanyId}&rubricId=${r.id}`)}
-                        className={`w-full text-left p-3.5 rounded-lg border text-xs transition-all flex items-center justify-between gap-4 cursor-pointer hover:bg-white/[0.02] ${
+                        className={`w-full text-left p-3.5 rounded-lg border text-xs transition-all flex items-center justify-between gap-4 cursor-pointer hover:border-[#E05D38] shadow-sm ${
                           isSelected
-                            ? "bg-violet-600/10 border-violet-500/30 text-violet-400 font-bold"
-                            : "bg-slate-900/10 border-white/5 text-slate-300"
+                            ? "bg-[#E05D38]/10 border-[#E05D38] text-[#2B231F] font-bold"
+                            : "bg-white border-[#E3DBCF] text-[#2B231F]"
                         }`}
                       >
                         <div className="flex flex-col gap-1 min-w-0 flex-1">
-                          <span className="truncate">{r.title}</span>
+                          <span className="truncate font-bold">{r.title}</span>
                           {r.description && (
-                            <span className="text-[10px] text-slate-500 font-normal truncate" title={r.description}>
+                            <span className="text-[10px] text-[#7A6C62] font-normal truncate" title={r.description}>
                               {r.description}
                             </span>
                           )}
@@ -1321,7 +1321,7 @@ export default function RubricsPage() {
                               e.stopPropagation();
                               handleDuplicateRubric(r);
                             }}
-                            className="bg-slate-800 hover:bg-slate-700 text-slate-350 border border-slate-700 hover:border-slate-600 rounded p-1.5 transition-all shrink-0 cursor-pointer"
+                            className="bg-white hover:bg-[#FAF6EE] text-[#2B231F] border border-[#E3DBCF] rounded p-1.5 transition-all shrink-0 cursor-pointer shadow-sm"
                             title="Duplicate Rubric"
                           >
                             <Copy className="h-3.5 w-3.5" />
@@ -1332,7 +1332,7 @@ export default function RubricsPage() {
                               e.stopPropagation();
                               handleDeleteRubric(r.id);
                             }}
-                            className="bg-rose-950/20 hover:bg-rose-900/30 text-rose-400 border border-rose-900/35 hover:border-rose-800/40 rounded p-1.5 transition-all shrink-0 cursor-pointer"
+                            className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 border border-rose-500/30 rounded p-1.5 transition-all shrink-0 cursor-pointer shadow-sm"
                             title="Delete Rubric"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -1347,13 +1347,13 @@ export default function RubricsPage() {
 
             {/* Version History Card */}
             {rubric && (
-              <div className="glass-card rounded-xl border border-white/5 p-6">
-                <h2 className="text-base font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3 mb-4">
-                  <History className="h-4.5 w-4.5 text-violet-400" />
+              <div className="glass-card rounded-xl border border-[#E3DBCF] p-6 shadow-sm">
+                <h2 className="text-base font-bold text-[#E05D38] flex items-center gap-2 border-b border-[#E3DBCF] pb-3 mb-4 font-serif">
+                  <History className="h-4.5 w-4.5 text-[#E05D38]" />
                   Version History
                 </h2>
                 {versionsLog.length === 0 ? (
-                  <div className="text-slate-500 text-xs py-8 text-center">
+                  <div className="text-[#7A6C62] text-xs py-8 text-center">
                     No version history found.
                   </div>
                 ) : (
@@ -1368,15 +1368,15 @@ export default function RubricsPage() {
                         <div
                           key={v.id}
                           onClick={() => fetchHistoricVersion(v.id)}
-                          className={`w-full text-left p-3.5 rounded-lg border text-xs transition-all flex items-center justify-between gap-4 cursor-pointer hover:bg-white/[0.02] ${
+                          className={`w-full text-left p-3.5 rounded-lg border text-xs transition-all flex items-center justify-between gap-4 cursor-pointer hover:border-[#E05D38] shadow-sm ${
                             isCurrentLoaded
-                              ? "bg-violet-600/10 border-violet-500/30 text-violet-400 font-bold"
-                              : "bg-slate-900/10 border-white/5 text-slate-300"
+                              ? "bg-[#E05D38]/10 border-[#E05D38] text-[#2B231F] font-bold"
+                              : "bg-white border-[#E3DBCF] text-[#2B231F]"
                           }`}
                         >
                           <div className="flex flex-col gap-1 min-w-0 flex-1">
-                            <span className="truncate">{`${cleanTitle} (v${v.version_number})`}</span>
-                            <span className="text-[10px] text-slate-500 font-normal">
+                            <span className="truncate font-bold">{`${cleanTitle} (v${v.version_number})`}</span>
+                            <span className="text-[10px] text-[#7A6C62] font-normal">
                               {new Date(v.created_at).toLocaleDateString(undefined, {
                                 month: "short",
                                 day: "numeric",
@@ -1386,7 +1386,7 @@ export default function RubricsPage() {
                             </span>
                           </div>
                           {v.is_active && (
-                            <span className="text-[9px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-450 font-medium px-2 py-0.5 rounded-full shrink-0">
+                            <span className="text-[9px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 font-extrabold px-2 py-0.5 rounded-full shrink-0">
                               Active
                             </span>
                           )}
