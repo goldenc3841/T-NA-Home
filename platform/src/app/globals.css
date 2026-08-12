@@ -33,6 +33,9 @@
 }
 
 @theme {
+  --font-serif: var(--font-header-serif), var(--font-instrument-serif), Georgia, serif;
+  --font-header: var(--font-header-serif), var(--font-instrument-serif), Georgia, serif;
+
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -61,6 +64,10 @@
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+}
+
+h1, h2, h3, .font-serif, .font-header, .font-display {
+  font-family: var(--font-header-serif), var(--font-instrument-serif), Georgia, serif;
 }
 
 /* Glassmorphism custom classes */
