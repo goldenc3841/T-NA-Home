@@ -24,19 +24,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Prompt and response text are required" }, { status: 400 });
     }
 
-    // Call atomic RPC function
-    const { data: result, error } = await supabase.rpc("submit_evaluation_turn", {
+    // Construct RPC arguments
+    const rpcPayload: Record<string, unknown> = {
       p_session_id: session_id || null,
       p_feature_id: feature_id || null,
       p_rubric_version_id: rubric_version_id || null,
       p_session_name: session_name || null,
-      p_session_description: session_description || null,
       p_prompt: prompt,
       p_response: response,
       p_source_url: source_url || null,
       p_turn_number: turn_number || null,
       p_scores: scores || [],
-    });
+    };
+
+    if (session_description !== undefined && session_description !== null) {
+      rpcPayload.p_session_description = session_description;
+    }
+
+    // Call atomic RPC function
+    let { data: result, error } = await supabase.rpc("submit_evaluation_turn", rpcPayload);
+
+    // Fallback: If remote DB schema cache does not have p_session_description parameter yet, retry with 9-parameter payload
+    if (error && error.message && error.message.includes("submit_evaluation_turn")) {
+      delete rpcPayload.p_session_description;
+      const fallback = await supabase.rpc("submit_evaluation_turn", rpcPayload);
+      result = fallback.data;
+      error = fallback.error;
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

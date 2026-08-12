@@ -1,7 +1,11 @@
 -- Add description column to sessions table if not present
 ALTER TABLE public.sessions ADD COLUMN IF NOT EXISTS description TEXT;
 
--- Update submit_evaluation_turn function to accept p_session_description and use custom date format fallback
+-- Drop existing functions to avoid schema cache overload conflicts
+DROP FUNCTION IF EXISTS public.submit_evaluation_turn(UUID, UUID, UUID, TEXT, TEXT, TEXT, TEXT, INT, JSONB);
+DROP FUNCTION IF EXISTS public.submit_evaluation_turn(UUID, UUID, UUID, TEXT, TEXT, TEXT, TEXT, INT, JSONB, TEXT);
+
+-- 1. Primary 10-parameter function
 CREATE OR REPLACE FUNCTION public.submit_evaluation_turn(
   p_session_id UUID,
   p_feature_id UUID,
@@ -78,6 +82,34 @@ BEGIN
   RETURN jsonb_build_object(
     'session_id', v_session_id,
     'turn_id', v_turn_id
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 2. Backwards-compatible 9-parameter wrapper overload
+CREATE OR REPLACE FUNCTION public.submit_evaluation_turn(
+  p_session_id UUID,
+  p_feature_id UUID,
+  p_rubric_version_id UUID,
+  p_session_name TEXT,
+  p_prompt TEXT,
+  p_response TEXT,
+  p_source_url TEXT,
+  p_turn_number INT,
+  p_scores JSONB
+) RETURNS JSONB AS $$
+BEGIN
+  RETURN public.submit_evaluation_turn(
+    p_session_id,
+    p_feature_id,
+    p_rubric_version_id,
+    p_session_name,
+    p_prompt,
+    p_response,
+    p_source_url,
+    p_turn_number,
+    p_scores,
+    NULL
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
