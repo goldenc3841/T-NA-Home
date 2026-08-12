@@ -559,7 +559,6 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                       <th key={crit.id} className="p-4 font-bold">{crit.name}</th>
                     ))}
                     
-                    <th className="p-4 w-24">Note</th>
                     <th className="p-4 w-12 text-right"></th>
                   </tr>
                 </thead>
@@ -624,9 +623,6 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                             );
                           })}
 
-                          <td className="p-4 text-slate-450 truncate max-w-[100px]" title={turn.scores?.[0]?.notes || "N/A"}>
-                            {turn.scores?.find(s => s.notes)?.notes || "N/A"}
-                          </td>
                           <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
@@ -642,7 +638,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                         {/* Collapsible Sub-Row Details */}
                         {isExpanded && (
                           <tr className="bg-slate-950/30">
-                            <td colSpan={criteria.length + 7} className="p-5 border-b border-white/5 space-y-4">
+                            <td colSpan={criteria.length + 6} className="p-5 border-b border-white/5 space-y-4">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                   <span className="text-[9px] font-bold text-violet-400 uppercase tracking-wider block">Prompt Input</span>
