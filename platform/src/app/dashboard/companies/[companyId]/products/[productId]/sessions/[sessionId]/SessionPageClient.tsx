@@ -596,7 +596,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                           <td className="p-4 max-w-xs truncate text-slate-400 font-mono text-[11px]" title={turn.response}>
                             {turn.response}
                           </td>
-                          <td className="p-4 text-slate-400 truncate max-w-[150px]" title={getRubricUsed(turn)}>
+                          <td className="p-4 text-slate-400 whitespace-normal break-words min-w-[120px]" title={getRubricUsed(turn)}>
                             {getRubricUsed(turn)}
                           </td>
 
