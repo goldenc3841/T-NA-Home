@@ -734,26 +734,6 @@
       const errMsg = errorData.error || `HTTP error ${res.status}`;
       const err = new Error(errMsg);
       err.status = res.status;
-      
-      // Auto-logout if the session is expired or invalid
-      if (res.status === 401 || res.status === 400) {
-        const lowercaseErr = errMsg.toLowerCase();
-        if (
-          lowercaseErr.includes("jwt") || 
-          lowercaseErr.includes("expired") || 
-          lowercaseErr.includes("token") || 
-          lowercaseErr.includes("unauthorized") || 
-          lowercaseErr.includes("invalid") ||
-          lowercaseErr.includes("signature")
-        ) {
-          err.isAuthError = true;
-          await chrome.storage.local.remove(["authToken", "userProfile"]);
-          authToken = null;
-          
-          removeOverlay();
-          alert("Your session has expired or is invalid. Please log in again via the extension popup.");
-        }
-      }
       throw err;
     }
 
@@ -768,9 +748,7 @@
       select.innerHTML = '<option value="">Select Company...</option>' + 
         companies.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
     } catch (err) {
-      if (!err.isAuthError) {
-        alert(err.message || "Failed to load companies from TNA Home.");
-      }
+      alert(err.message || "Failed to load companies from TNA Home.");
     }
   }
 
@@ -801,9 +779,7 @@
       featureSelect.disabled = false;
     } catch (err) {
       console.error("Error loading features:", err);
-      if (!err.isAuthError) {
-        alert(err.message || "Failed to load features from TNA Home.");
-      }
+      alert(err.message || "Failed to load features from TNA Home.");
     }
     validateForm();
   }
@@ -842,9 +818,7 @@
       await refreshSessionsOnly();
     } catch (err) {
       console.error("Error loading active rubric/sessions:", err);
-      if (!err.isAuthError) {
-        alert(err.message || "Failed to load active rubric/sessions from TNA Home.");
-      }
+      alert(err.message || "Failed to load active rubric/sessions from TNA Home.");
     }
     
     validateForm();
@@ -1185,9 +1159,7 @@
       // Refresh active sessions list for this feature; automatically retains selectedSessionId
       await refreshSessionsOnly();
     } catch (err) {
-      if (!err.isAuthError) {
-        alert("Submission failed: " + err.message);
-      }
+      alert("Submission failed: " + err.message);
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Submit Evaluation";
