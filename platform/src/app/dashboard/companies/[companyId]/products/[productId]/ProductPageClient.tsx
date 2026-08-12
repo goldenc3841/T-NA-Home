@@ -358,7 +358,7 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
                     <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <Link
                         href={`/dashboard/companies/${companyId}/products/${productId}/sessions/${session.id}`}
-                        className="px-3.5 py-1.5 rounded-lg bg-violet-600/10 border border-violet-500/20 text-violet-450 hover:bg-violet-600 hover:text-white transition-all text-[11px] font-bold cursor-pointer inline-block"
+                        className="px-3.5 py-1.5 rounded-lg bg-[#94BBE0]/30 border border-[#94BBE0]/60 text-[#1E3A5F] hover:bg-[#94BBE0] hover:text-[#1E3A5F] transition-all text-[11px] font-extrabold cursor-pointer inline-block shadow-sm"
                       >
                         View
                       </Link>
