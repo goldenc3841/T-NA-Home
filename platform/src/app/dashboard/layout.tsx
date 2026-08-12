@@ -24,7 +24,7 @@ export default async function DashboardLayout({
     .single();
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden">
+    <div className="flex h-screen bg-[#FAF6EE] text-[#2B231F] overflow-hidden">
       {/* Sidebar Nav (Client Component) */}
       <SidebarNav
         profileName={profile?.full_name || user.email || "Evaluator"}

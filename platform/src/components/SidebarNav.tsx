@@ -40,7 +40,7 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
   };
 
   return (
-    <aside className="w-64 bg-[#F7F3EB] border-r border-[#E3DBCF] flex flex-col justify-between shrink-0 font-sans shadow-sm">
+    <aside className="w-64 bg-[#FAF6EE] border-r border-[#E3DBCF] flex flex-col justify-between shrink-0 font-sans shadow-sm">
       {/* Top Header */}
       <div>
         <div className="h-16 flex items-center px-6 border-b border-[#E3DBCF]">
