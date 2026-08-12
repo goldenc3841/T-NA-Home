@@ -13,11 +13,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg("");
+    setSuccessMsg("");
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -34,6 +36,32 @@ export default function LoginPage() {
     } catch (err: unknown) {
       const error = err as Error;
       setErrorMsg(error.message || "An unexpected error occurred.");
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    if (!email.trim()) {
+      setErrorMsg("Please enter your email address first, then click Forgot Password.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/login`,
+      });
+
+      if (error) throw error;
+
+      setSuccessMsg("Password reset link sent! Please check your email inbox.");
+    } catch (err: unknown) {
+      const error = err as Error;
+      setErrorMsg(error.message || "Failed to send password reset email.");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -64,6 +92,13 @@ export default function LoginPage() {
           </div>
         )}
 
+        {successMsg && (
+          <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 text-xs font-semibold flex items-start gap-3">
+            <span className="shrink-0 text-emerald-700 font-bold">✓</span>
+            <span>{successMsg}</span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
@@ -84,9 +119,18 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
-              Password
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
+                Password
+              </label>
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-[11px] text-[#E05D38] hover:text-[#C54824] font-bold transition-colors cursor-pointer"
+              >
+                Forgot password?
+              </button>
+            </div>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A6C62]" />
               <input
