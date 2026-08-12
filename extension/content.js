@@ -505,8 +505,6 @@
             <select id="tna-session-select" disabled>
               <option value="new">Create New Session...</option>
             </select>
-            <input type="text" id="tna-session-name" placeholder="Enter session name..." class="hidden" style="margin-top: 6px;">
-            <input type="text" id="tna-session-desc" placeholder="Session description (optional)..." class="hidden" style="margin-top: 6px;">
           </div>
         </div>
 
@@ -871,17 +869,8 @@
 
   function handleSessionChange(e) {
     selectedSessionId = e.target.value;
-    const sessionNameInput = shadowRoot.getElementById("tna-session-name");
-    const sessionDescInput = shadowRoot.getElementById("tna-session-desc");
-    
     if (selectedSessionId === "new") {
-      sessionNameInput.classList.remove("hidden");
-      if (sessionDescInput) sessionDescInput.classList.remove("hidden");
       newSessionName = getFormattedDateName();
-      sessionNameInput.value = newSessionName;
-    } else {
-      sessionNameInput.classList.add("hidden");
-      if (sessionDescInput) sessionDescInput.classList.add("hidden");
     }
     validateForm();
   }
@@ -1088,9 +1077,8 @@
     
     let isSessionValid = false;
     if (selectedSessionId === "new") {
-      const sessionNameInput = shadowRoot.getElementById("tna-session-name");
-      newSessionName = sessionNameInput.value.trim();
-      isSessionValid = newSessionName.length > 0;
+      newSessionName = getFormattedDateName();
+      isSessionValid = true;
     } else {
       isSessionValid = !!selectedSessionId;
     }
@@ -1142,8 +1130,8 @@
       session_id: selectedSessionId === "new" ? null : selectedSessionId,
       feature_id: selectedFeatureId,
       rubric_version_id: activeRubricVersion ? activeRubricVersion.id : null,
-      session_name: selectedSessionId === "new" ? newSessionName : null,
-      session_description: selectedSessionId === "new" ? (shadowRoot.getElementById("tna-session-desc")?.value.trim() || null) : null,
+      session_name: selectedSessionId === "new" ? (newSessionName || getFormattedDateName()) : null,
+      session_description: null,
       prompt: capturedPrompt,
       response: capturedResponse,
       source_url: window.location.href,
