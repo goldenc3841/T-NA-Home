@@ -17,7 +17,8 @@ import {
   ArrowLeft,
   ChevronLeft,
   Settings,
-  FileText
+  FileText,
+  Trash2
 } from "lucide-react";
 
 interface Company {
@@ -225,6 +226,40 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
     }
   };
 
+  // Handle Delete Product (Feature) and associated data cascade
+  const handleDeleteProduct = async (productId: string, productName: string) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete the product "${productName}"? This will delete all evaluation sessions and scores associated with this product. This action cannot be undone.`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from("features")
+        .delete()
+        .eq("id", productId);
+
+      if (error) throw error;
+
+      // Update local state list of products
+      setFeatures(prev => prev.filter(f => f.id !== productId));
+
+      // Reset selection filter if active
+      if (selectedProductId === productId) {
+        setSelectedProductId(null);
+      }
+
+      // Re-fetch evaluations list to reflect cascade deletion
+      const res = await fetch(`/api/evaluations?company_id=${companyId}`);
+      if (res.ok) {
+        const evalData = await res.json();
+        setSessions(evalData.sessions || []);
+      }
+    } catch (err: any) {
+      alert("Error deleting product: " + err.message);
+    }
+  };
+
   // Handle Start Evaluation Session
   const handleStartEvaluation = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -380,7 +415,21 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                   <span className="font-bold text-xs text-slate-200 group-hover:text-violet-400 transition-colors truncate">
                     {product.name}
                   </span>
-                  <ChevronRight className="h-3.5 w-3.5 mt-0.5 text-slate-500 group-hover:text-white transition-transform group-hover:translate-x-0.5" />
+                  <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleDeleteProduct(product.id, product.name);
+                      }}
+                      className="text-slate-500 hover:text-rose-450 p-1 rounded hover:bg-rose-950/20 transition-all cursor-pointer inline-flex items-center opacity-0 group-hover:opacity-100 focus:opacity-100"
+                      title={`Delete ${product.name}`}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                    <ChevronRight className="h-3.5 w-3.5 mt-0.5 text-slate-500 group-hover:text-white transition-transform group-hover:translate-x-0.5" />
+                  </div>
                 </div>
                 <p className="text-[10px] text-slate-550 line-clamp-1 mt-1.5 leading-normal">
                   {product.description || "No description provided."}
