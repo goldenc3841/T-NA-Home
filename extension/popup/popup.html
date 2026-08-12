@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <style>
     :root {
-      --primary: #8b5cf6;
-      --primary-hover: #7c3aed;
-      --bg: #0f172a;
-      --bg-card: rgba(30, 41, 59, 0.7);
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: rgba(255, 255, 255, 0.1);
+      --primary: #E05D38;
+      --primary-hover: #C54824;
+      --bg: #FAF6EE;
+      --bg-card: #FFFFFF;
+      --text: #2B231F;
+      --text-muted: #7A6C62;
+      --border: #E3DBCF;
       --success: #10b981;
     }
 
@@ -34,9 +34,8 @@
       margin: 0 0 4px 0;
       font-size: 18px;
       font-weight: 700;
-      background: linear-gradient(135deg, #a78bfa, #8b5cf6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--primary);
+      font-family: Georgia, serif;
       letter-spacing: -0.025em;
     }
 
@@ -50,9 +49,9 @@
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 12px;
-      backdrop-filter: blur(10px);
+      box-shadow: 0 1px 3px rgba(43, 35, 31, 0.05);
     }
 
     .form-group {
@@ -68,16 +67,16 @@
 
     label {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
     }
 
     input {
-      background: rgba(15, 23, 42, 0.6);
+      background: #FFFFFF;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 8px;
       padding: 8px 10px;
       color: var(--text);
       font-size: 13px;
@@ -87,22 +86,23 @@
     input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+      box-shadow: 0 0 0 2px rgba(224, 93, 56, 0.2);
     }
 
     button {
       background: var(--primary);
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       padding: 10px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: background 0.2s;
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 6px;
+      box-shadow: 0 1px 3px rgba(224, 93, 56, 0.2);
     }
 
     button:hover {
@@ -110,13 +110,14 @@
     }
 
     .btn-secondary {
-      background: transparent;
+      background: #FFFFFF;
       border: 1px solid var(--border);
       color: var(--text);
+      box-shadow: 0 1px 3px rgba(43, 35, 31, 0.05);
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: #FAF6EE;
     }
 
     .btn-danger {

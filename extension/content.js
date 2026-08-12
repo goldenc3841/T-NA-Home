@@ -81,15 +81,16 @@
     const style = document.createElement("style");
     style.textContent = `
       :host {
-        --primary: #8b5cf6;
-        --primary-hover: #7c3aed;
-        --bg-glass: rgba(15, 23, 42, 0.85);
-        --bg-card: rgba(30, 41, 59, 0.4);
-        --text: #f8fafc;
-        --text-muted: #94a3b8;
-        --border: rgba(255, 255, 255, 0.08);
+        --primary: #E05D38;
+        --primary-hover: #C54824;
+        --bg-glass: rgba(250, 246, 238, 0.98);
+        --bg-card: #FFFFFF;
+        --text: #2B231F;
+        --text-muted: #7A6C62;
+        --border: rgba(227, 219, 207, 0.9);
         --success: #10b981;
-        --accent: #a78bfa;
+        --accent: #E05D38;
+        --sky-blue: #94BBE0;
       }
 
       * {
@@ -105,12 +106,12 @@
         max-height: calc(100vh - 40px);
         background: var(--bg-glass);
         border: 1px solid var(--border);
-        border-radius: 12px;
+        border-radius: 16px;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 20px 25px -5px rgba(43, 35, 31, 0.15), 0 10px 10px -5px rgba(43, 35, 31, 0.1);
         color: var(--text);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-family: Plus Jakarta Sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         display: flex;
         flex-direction: column;
         pointer-events: auto;
@@ -129,8 +130,8 @@
         height: 14px;
         cursor: se-resize;
         z-index: 1002;
-        background: linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.15) 50%);
-        border-bottom-right-radius: 12px;
+        background: linear-gradient(135deg, transparent 50%, rgba(224, 93, 56, 0.2) 50%);
+        border-bottom-right-radius: 16px;
       }
 
       .resize-handle:hover {
@@ -154,6 +155,7 @@
         align-items: center;
         cursor: grab;
         user-select: none;
+        background: #FAF6EE;
       }
 
       .header:active {
@@ -217,9 +219,8 @@
         margin: 0;
         font-size: 16px;
         font-weight: 700;
-        background: linear-gradient(135deg, #a78bfa, #8b5cf6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--primary);
+        font-family: Georgia, serif;
       }
 
       .close-btn {
@@ -249,11 +250,12 @@
       .selector-section {
         background: var(--bg-card);
         border: 1px solid var(--border);
-        border-radius: 8px;
+        border-radius: 10px;
         padding: 12px;
         display: flex;
         flex-direction: column;
         gap: 10px;
+        box-shadow: 0 1px 3px rgba(43, 35, 31, 0.05);
       }
 
       .field-group {
@@ -264,16 +266,16 @@
 
       label {
         font-size: 11px;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
         color: var(--text-muted);
         letter-spacing: 0.05em;
       }
 
       select, input, textarea {
-        background: rgba(15, 23, 42, 0.6);
+        background: #FFFFFF;
         border: 1px solid var(--border);
-        border-radius: 6px;
+        border-radius: 8px;
         padding: 8px;
         color: var(--text);
         font-size: 13px;
@@ -293,13 +295,13 @@
       }
 
       .capture-btn {
-        background: rgba(139, 92, 246, 0.1);
-        border: 1px dashed var(--primary);
-        color: var(--accent);
+        background: rgba(148, 187, 224, 0.25);
+        border: 1px dashed var(--sky-blue);
+        color: #1E3A5F;
         padding: 10px;
-        border-radius: 6px;
+        border-radius: 8px;
         cursor: pointer;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 13px;
         text-align: center;
         transition: all 0.2s;
@@ -310,7 +312,7 @@
       }
 
       .capture-btn:hover {
-        background: rgba(139, 92, 246, 0.2);
+        background: rgba(148, 187, 224, 0.45);
       }
 
       .capture-btn.active {
@@ -327,15 +329,15 @@
       }
 
       .captured-preview {
-        background: rgba(15, 23, 42, 0.4);
+        background: #FAF6EE;
         border: 1px solid var(--border);
-        border-radius: 6px;
+        border-radius: 8px;
         padding: 8px;
         font-size: 12px;
         max-height: 80px;
         overflow-y: auto;
         white-space: pre-wrap;
-        color: #e2e8f0;
+        color: var(--text);
       }
 
       .rubric-section {
@@ -349,17 +351,18 @@
       .criterion-card {
         background: var(--bg-card);
         border: 1px solid var(--border);
-        border-radius: 8px;
+        border-radius: 10px;
         padding: 12px;
         display: flex;
         flex-direction: column;
         gap: 10px;
+        box-shadow: 0 1px 3px rgba(43, 35, 31, 0.05);
       }
 
       .criterion-name {
-        font-weight: 600;
+        font-weight: 700;
         font-size: 13px;
-        color: var(--accent);
+        color: var(--text);
       }
 
       .criterion-desc {
@@ -389,25 +392,25 @@
       .bool-btn {
         flex: 1;
         padding: 8px;
-        border-radius: 6px;
+        border-radius: 8px;
         border: 1px solid var(--border);
-        background: rgba(15, 23, 42, 0.4);
+        background: #FFFFFF;
         color: var(--text-muted);
         cursor: pointer;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 12px;
         text-align: center;
         transition: all 0.2s;
       }
       .bool-btn.active-pass {
-        background: rgba(16, 185, 129, 0.2);
+        background: rgba(16, 185, 129, 0.15);
         border-color: var(--success);
-        color: #6ee7b7;
+        color: #047857;
       }
       .bool-btn.active-fail {
-        background: rgba(239, 68, 68, 0.2);
+        background: rgba(239, 68, 68, 0.15);
         border-color: #ef4444;
-        color: #fca5a5;
+        color: #b91c1c;
       }
 
       .footer {
@@ -415,13 +418,14 @@
         border-top: 1px solid var(--border);
         display: flex;
         gap: 10px;
+        background: #FAF6EE;
       }
 
       .btn {
         flex: 1;
         padding: 10px;
-        border-radius: 6px;
-        font-weight: 600;
+        border-radius: 8px;
+        font-weight: 700;
         cursor: pointer;
         text-align: center;
         font-size: 13px;
@@ -432,12 +436,16 @@
       .btn-primary {
         background: var(--primary);
         color: white;
+        box-shadow: 0 1px 3px rgba(224, 93, 56, 0.2);
       }
       .btn-primary:hover {
         background: var(--primary-hover);
       }
       .btn-primary:disabled {
-        background: rgba(139, 92, 246, 0.4);
+        background: rgba(224, 93, 56, 0.4);
+        cursor: not-allowed;
+        color: rgba(255, 255, 255, 0.7);
+      }
         cursor: not-allowed;
         color: var(--text-muted);
       }
