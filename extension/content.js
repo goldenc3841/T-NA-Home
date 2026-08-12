@@ -1196,21 +1196,58 @@
   }
 
   function showToast(message) {
+    // Remove existing toast if any
+    const existingBodyToast = document.getElementById("tna-global-toast");
+    if (existingBodyToast) existingBodyToast.remove();
+
     const toast = document.createElement("div");
-    toast.className = "toast";
+    toast.id = "tna-global-toast";
+    toast.style.cssText = `
+      position: fixed !important;
+      bottom: 28px !important;
+      right: 28px !important;
+      background: linear-gradient(135deg, #059669, #10b981) !important;
+      color: #ffffff !important;
+      padding: 14px 24px !important;
+      border-radius: 12px !important;
+      font-weight: 700 !important;
+      font-size: 14px !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      letter-spacing: 0.01em !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(16, 185, 129, 0.6) !important;
+      border: 2px solid rgba(255, 255, 255, 0.4) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      pointer-events: auto !important;
+      z-index: 2147483647 !important;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      transform: translateY(0) scale(1) !important;
+      opacity: 1 !important;
+    `;
     toast.innerHTML = `
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
         <polyline points="20 6 9 17 4 12"></polyline>
       </svg>
       <span>${message}</span>
     `;
-    shadowRoot.appendChild(toast);
-    
+
+    document.body.appendChild(toast);
+    if (shadowRoot) {
+      const shadowClone = toast.cloneNode(true);
+      shadowClone.removeAttribute("id");
+      shadowRoot.appendChild(shadowClone);
+      setTimeout(() => {
+        shadowClone.style.opacity = "0";
+        shadowClone.style.transform = "translateY(20px) scale(0.95)";
+        setTimeout(() => shadowClone.remove(), 400);
+      }, 3000);
+    }
+
     setTimeout(() => {
-      toast.style.transition = "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)";
       toast.style.opacity = "0";
       toast.style.transform = "translateY(20px) scale(0.95)";
       setTimeout(() => toast.remove(), 400);
-    }, 2800);
+    }, 3000);
   }
 })();
