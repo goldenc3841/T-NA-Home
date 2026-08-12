@@ -472,7 +472,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
       </nav>
 
       {/* Header and Back Link */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-4">
         <button
           onClick={() => router.push(`/dashboard/companies/${companyId}/products/${productId}`)}
           className="flex items-center gap-2 text-slate-450 hover:text-slate-200 transition-colors text-xs font-semibold cursor-pointer"
@@ -480,6 +480,17 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
           <ArrowLeft className="h-4 w-4" />
           Back to Sessions Log
         </button>
+
+        {session?.rubric_version?.rubric && (
+          <Link
+            href={`/dashboard/rubrics?companyId=${companyId}&rubricId=${session.rubric_version.rubric.id}`}
+            className="px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/25 hover:border-violet-400 hover:bg-violet-600/10 text-violet-450 hover:text-violet-300 transition-all text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shadow"
+            title={`Open Rubrics Builder: ${session.rubric_version.rubric.title}`}
+          >
+            <Award className="h-3.5 w-3.5" />
+            Rubric Used: {session.rubric_version.rubric.title} (v{session.rubric_version.version_number})
+          </Link>
+        )}
       </div>
 
       {/* Top Section: Session Summary Dashboard Banner */}
