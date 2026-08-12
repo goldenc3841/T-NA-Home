@@ -712,17 +712,55 @@
   // API Operations
   // ==========================================
 
-  // Helper to perform API requests to TNA Home with auth headers and error handling
+  // Helper to perform API requests to TNA Home via background service worker (bypasses HTTPS -> HTTP Mixed Content blocking)
   async function apiFetch(endpoint, options = {}) {
     const url = `${platformUrl}${endpoint}`;
     const headers = {
       "Authorization": `Bearer ${authToken}`,
       ...options.headers
     };
-    
+
+    const fetchOptions = {
+      method: options.method || "GET",
+      headers,
+      body: options.body
+    };
+
+    return new Promise((resolve, reject) => {
+      try {
+        chrome.runtime.sendMessage(
+          {
+            action: "api-fetch",
+            url,
+            options: fetchOptions
+          },
+          (response) => {
+            if (chrome.runtime.lastError || !response) {
+              // Direct fetch fallback if background worker unavailable
+              directFetch(url, fetchOptions).then(resolve).catch(reject);
+              return;
+            }
+
+            if (!response.ok) {
+              const errMsg = response.data?.error || response.error || `HTTP error ${response.status}`;
+              const err = new Error(errMsg);
+              err.status = response.status;
+              reject(err);
+            } else {
+              resolve(response.data);
+            }
+          }
+        );
+      } catch (err) {
+        directFetch(url, fetchOptions).then(resolve).catch(reject);
+      }
+    });
+  }
+
+  async function directFetch(url, fetchOptions) {
     let res;
     try {
-      res = await fetch(url, { ...options, headers });
+      res = await fetch(url, fetchOptions);
     } catch (netErr) {
       const err = new Error(`Failed to connect to TNA Home. Please verify that the server is running at ${platformUrl}.`);
       err.isNetworkError = true;

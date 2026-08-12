@@ -12,3 +12,26 @@ chrome.commands.onCommand.addListener(async (command) => {
     }
   }
 });
+
+// Proxy API requests from content script to bypass HTTPS -> HTTP Mixed Content restriction
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "api-fetch") {
+    const { url, options } = request;
+    fetch(url, options)
+      .then(async (res) => {
+        const ok = res.ok;
+        const status = res.status;
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (e) {
+          data = {};
+        }
+        sendResponse({ ok, status, data });
+      })
+      .catch((err) => {
+        sendResponse({ ok: false, status: 0, error: err.message || "Failed to connect to server" });
+      });
+    return true; // Keep channel open for async response
+  }
+});
