@@ -454,19 +454,19 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
       <nav className="flex items-center gap-1.5 text-xs font-semibold text-[#7A6C62]">
         <Link 
           href={`/dashboard/companies/${companyId}`}
-          className="hover:text-[#2B231F] transition-colors uppercase tracking-wider text-[10px]"
+          className="hover:text-[#E05D38] transition-colors uppercase tracking-wider text-[10px] text-[#2B231F] font-bold"
         >
           {companyName}
         </Link>
         <ChevronRight className="h-3 w-3 text-[#7A6C62]" />
         <Link 
           href={`/dashboard/companies/${companyId}/products/${productId}`}
-          className="hover:text-[#2B231F] transition-colors uppercase tracking-wider text-[10px]"
+          className="hover:text-[#E05D38] transition-colors uppercase tracking-wider text-[10px] text-[#2B231F] font-bold"
         >
           {productName}
         </Link>
         <ChevronRight className="h-3 w-3 text-[#7A6C62]" />
-        <span className="text-[#E05D38] border-b border-[#E05D38]/30 pb-0.5 uppercase tracking-wider text-[10px] truncate max-w-[150px]" title={session?.name}>
+        <span className="text-[#2B231F] font-bold border-b border-[#E05D38]/30 pb-0.5 uppercase tracking-wider text-[10px] truncate max-w-[150px]" title={session?.name}>
           {session?.name || "Session"}
         </span>
       </nav>

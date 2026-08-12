@@ -393,7 +393,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-[#E05D38] tracking-tight flex items-center gap-2 font-serif">
+          <h1 className="text-3xl font-bold text-[#2B231F] tracking-tight flex items-center gap-2 font-serif">
             <Building className="h-7 w-7 text-[#E05D38]" />
             {company?.name || "Client Workspace"}
           </h1>
@@ -584,17 +584,17 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                         <tr 
                           key={session.id} 
                           onClick={() => router.push(`/dashboard/companies/${companyId}/products/${session.feature?.id}/sessions/${session.id}`)}
-                          className="hover:bg-[#FAF6EE] transition-colors text-[#2B231F] cursor-pointer"
+                          className="hover:bg-[#FAF6EE] transition-colors text-[#2B231F] cursor-pointer group"
                         >
                           <td className="p-3 font-mono text-[10px] text-[#7A6C62]">
                             {session.id.substring(0, 8)}
                           </td>
-                          <td className="p-3 font-semibold text-[#2B231F] truncate max-w-[130px]" title={session.name}>
+                          <td className="p-3 font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors truncate max-w-[130px]" title={session.name}>
                             {session.name}
                           </td>
                           <td className="p-3">
                             <span 
-                              className="font-semibold text-[#2B231F] truncate max-w-[120px] block"
+                              className="font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors truncate max-w-[120px] block"
                               title={session.feature?.name}
                             >
                               {session.feature?.name}

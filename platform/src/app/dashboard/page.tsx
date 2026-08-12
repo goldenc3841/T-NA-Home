@@ -299,14 +299,14 @@ export default function DashboardPage() {
               {recentFeatures.map((row) => {
                 const isExpanded = !!expandedFeatures[row.featureId];
                 return (
-                  <div key={row.featureId} className="p-4 transition-colors hover:bg-white/[0.01]">
+                  <div key={row.featureId} className="p-4 transition-colors hover:bg-[#FAF6EE]/50">
                     {/* Feature Row Header */}
                     <div 
                       onClick={() => toggleFeatureExpand(row.featureId)}
                       className="flex items-center justify-between gap-4 cursor-pointer group/row"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-8 w-8 rounded-lg bg-slate-950 border border-white/5 flex items-center justify-center text-slate-400 group-hover/row:border-violet-500/30 group-hover/row:text-violet-450 transition-colors shrink-0">
+                        <div className="h-8 w-8 rounded-lg bg-white border border-[#E3DBCF] flex items-center justify-center text-[#7A6C62] group-hover/row:border-[#E05D38] group-hover/row:text-[#E05D38] transition-colors shrink-0">
                           {isExpanded ? (
                             <ChevronDown className="h-4 w-4" />
                           ) : (
@@ -314,14 +314,14 @@ export default function DashboardPage() {
                           )}
                         </div>
                         <div className="flex items-center gap-2 min-w-0">
-                          <Folder className="h-4 w-4 text-violet-500 shrink-0" />
-                          <span className="font-semibold text-xs md:text-sm text-slate-200 truncate group-hover/row:text-slate-100 transition-colors">
+                          <Folder className="h-4 w-4 text-[#E05D38] shrink-0" />
+                          <span className="font-bold text-xs md:text-sm text-[#2B231F] truncate group-hover/row:text-[#E05D38] transition-colors">
                             {row.companyName}
                           </span>
-                          <span className="text-slate-500 font-medium text-xs">•</span>
+                          <span className="text-[#7A6C62] font-medium text-xs">•</span>
                           <Link
                             href={`/dashboard/companies/${row.companyId}/products/${row.featureId}`}
-                            className="text-xs md:text-sm text-slate-400 hover:text-violet-400 hover:underline truncate transition-colors cursor-pointer"
+                            className="text-xs md:text-sm text-[#2B231F] hover:text-[#E05D38] hover:underline truncate transition-colors cursor-pointer font-bold"
                             onClick={(e) => e.stopPropagation()}
                           >
                             {row.featureName}
@@ -330,7 +330,7 @@ export default function DashboardPage() {
                       </div>
                       
                       <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-[10px] text-slate-500 font-bold bg-slate-950 px-2.5 py-1 rounded-md border border-white/5">
+                        <span className="text-[10px] text-[#7A6C62] font-bold bg-white px-2.5 py-1 rounded-md border border-[#E3DBCF]">
                           {formatRelativeTime(row.lastActivity)}
                         </span>
                       </div>
@@ -340,20 +340,20 @@ export default function DashboardPage() {
                     {isExpanded && (
                       <div className="pl-6 mt-3 space-y-1 relative animate-in fade-in duration-200">
                         {/* Vertical line connecting Feature to subfolders */}
-                        <div className="absolute left-3.5 top-0 bottom-4 w-px bg-slate-800" />
+                        <div className="absolute left-3.5 top-0 bottom-4 w-px bg-[#E3DBCF]" />
                         
                         {/* Subfolder header */}
-                        <div className="relative pl-8 py-1.5 flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        <div className="relative pl-8 py-1.5 flex items-center gap-2 text-[10px] font-bold text-[#7A6C62] uppercase tracking-wider">
                           {/* Horizontal connector to parent line */}
-                          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-px bg-slate-800" />
-                          <Folder className="h-3.5 w-3.5 text-slate-600 shrink-0" />
+                          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-px bg-[#E3DBCF]" />
+                          <Folder className="h-3.5 w-3.5 text-[#7A6C62] shrink-0" />
                           <span>Evaluation Sessions</span>
                         </div>
                         
                         {/* Nested sessions list */}
                         <div className="pl-4 space-y-1 relative">
                           {/* Vertical line for the sub-sessions */}
-                          <div className="absolute left-7.5 top-0 bottom-4 w-px bg-slate-800" />
+                          <div className="absolute left-7.5 top-0 bottom-4 w-px bg-[#E3DBCF]" />
                           
                           {row.sessions.map((session, sIdx) => {
                             const isLastSession = sIdx === row.sessions.length - 1;
@@ -365,17 +365,17 @@ export default function DashboardPage() {
                                   const fullSession = sessions.find(s => s.id === session.id);
                                   if (fullSession) setInspectedSession(fullSession);
                                 }}
-                                className="relative pl-10 pr-3 py-1.5 rounded-lg hover:bg-white/5 transition-all cursor-pointer flex items-center justify-between text-xs text-slate-350 hover:text-white group/session"
+                                className="relative pl-10 pr-3 py-1.5 rounded-lg hover:bg-white transition-all cursor-pointer flex items-center justify-between text-xs text-[#2B231F] hover:text-[#E05D38] group/session font-bold"
                               >
                                 {/* Vertical line segment */}
-                                <div className={`absolute left-7.5 top-0 w-px bg-slate-800 ${isLastSession ? "h-1/2" : "bottom-0"}`} />
+                                <div className={`absolute left-7.5 top-0 w-px bg-[#E3DBCF] ${isLastSession ? "h-1/2" : "bottom-0"}`} />
                                 {/* Horizontal connector line */}
-                                <div className="absolute left-7.5 top-1/2 -translate-y-1/2 w-3.5 h-px bg-slate-800" />
+                                <div className="absolute left-7.5 top-1/2 -translate-y-1/2 w-3.5 h-px bg-[#E3DBCF]" />
                                 
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <Folder className="h-3.5 w-3.5 text-violet-400/80 group-hover/session:text-violet-450 shrink-0" />
-                                  <span className="truncate font-medium">{session.name}</span>
-                                  <span className="text-[10px] text-slate-500 font-normal">({formatExactDate(session.updated_at)})</span>
+                                  <Folder className="h-3.5 w-3.5 text-[#E05D38]/80 group-hover/session:text-[#E05D38] shrink-0" />
+                                  <span className="truncate font-bold text-[#2B231F] group-hover/session:text-[#E05D38] transition-colors">{session.name}</span>
+                                  <span className="text-[10px] text-[#7A6C62] font-normal">({formatExactDate(session.updated_at)})</span>
                                 </div>
                               </div>
                             );

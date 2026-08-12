@@ -263,12 +263,12 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
       <nav className="flex items-center gap-1.5 text-xs font-semibold text-[#7A6C62]">
         <Link 
           href={`/dashboard/companies/${companyId}`}
-          className="hover:text-[#2B231F] transition-colors uppercase tracking-wider text-[10px]"
+          className="hover:text-[#E05D38] transition-colors uppercase tracking-wider text-[10px] text-[#2B231F] font-bold"
         >
           {companyName}
         </Link>
         <ChevronRight className="h-3 w-3 text-[#7A6C62]" />
-        <span className="text-[#E05D38] border-b border-[#E05D38]/30 pb-0.5 uppercase tracking-wider text-[10px]">
+        <span className="text-[#2B231F] font-bold border-b border-[#E05D38]/30 pb-0.5 uppercase tracking-wider text-[10px]">
           {productName}
         </span>
       </nav>
@@ -330,28 +330,28 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
                   <th className="p-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-slate-350">
+              <tbody className="divide-y divide-[#E3DBCF] text-[#2B231F]">
                 {paginatedSessions.map((session) => (
                   <tr 
                     key={session.id} 
-                    className="hover:bg-white/[0.02] transition-colors cursor-pointer"
+                    className="hover:bg-[#FAF6EE] transition-colors cursor-pointer group"
                     onClick={() => router.push(`/dashboard/companies/${companyId}/products/${productId}/sessions/${session.id}`)}
                   >
-                    <td className="p-4 font-mono text-[10px] text-slate-450">
+                    <td className="p-4 font-mono text-[10px] text-[#7A6C62]">
                       {session.id.substring(0, 8)}
                     </td>
-                    <td className="p-4 font-bold text-slate-200">
+                    <td className="p-4 font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors">
                       {session.name}
                     </td>
-                    <td className="p-4 text-slate-400">
+                    <td className="p-4 text-[#7A6C62]">
                       {session.rubric_version?.rubric?.title}
                     </td>
-                    <td className="p-4 text-slate-400">
+                    <td className="p-4 text-[#7A6C62]">
                       {formatExactDate(session.created_at)}
                     </td>
-                    <td className="p-4 text-slate-400">
+                    <td className="p-4 text-[#7A6C62]">
                       <span className="flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5 text-slate-500" />
+                        <Clock className="h-3.5 w-3.5 text-[#7A6C62]" />
                         {formatRelativeTime(session.updated_at)} ago
                       </span>
                     </td>
