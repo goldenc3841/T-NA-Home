@@ -451,22 +451,22 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
   return (
     <div className="space-y-6 max-w-5xl mx-auto py-2">
       {/* Clickable Breadcrumbs */}
-      <nav className="flex items-center gap-1.5 text-xs font-semibold text-slate-450">
+      <nav className="flex items-center gap-1.5 text-xs font-semibold text-[#7A6C62]">
         <Link 
           href={`/dashboard/companies/${companyId}`}
-          className="hover:text-slate-200 transition-colors uppercase tracking-wider text-[10px]"
+          className="hover:text-[#2B231F] transition-colors uppercase tracking-wider text-[10px]"
         >
           {companyName}
         </Link>
-        <ChevronRight className="h-3 w-3 text-slate-650" />
+        <ChevronRight className="h-3 w-3 text-[#7A6C62]" />
         <Link 
           href={`/dashboard/companies/${companyId}/products/${productId}`}
-          className="hover:text-slate-200 transition-colors uppercase tracking-wider text-[10px]"
+          className="hover:text-[#2B231F] transition-colors uppercase tracking-wider text-[10px]"
         >
           {productName}
         </Link>
-        <ChevronRight className="h-3 w-3 text-slate-650" />
-        <span className="text-violet-400 border-b border-violet-500/30 pb-0.5 uppercase tracking-wider text-[10px] truncate max-w-[150px]" title={session?.name}>
+        <ChevronRight className="h-3 w-3 text-[#7A6C62]" />
+        <span className="text-[#E05D38] border-b border-[#E05D38]/30 pb-0.5 uppercase tracking-wider text-[10px] truncate max-w-[150px]" title={session?.name}>
           {session?.name || "Session"}
         </span>
       </nav>
@@ -475,7 +475,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
       <div className="flex items-center justify-between gap-4">
         <button
           onClick={() => router.push(`/dashboard/companies/${companyId}/products/${productId}`)}
-          className="flex items-center gap-2 text-slate-450 hover:text-slate-200 transition-colors text-xs font-semibold cursor-pointer"
+          className="flex items-center gap-2 text-[#7A6C62] hover:text-[#2B231F] transition-colors text-xs font-semibold cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Sessions Log
@@ -484,7 +484,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
         {session?.rubric_version?.rubric && (
           <Link
             href={`/dashboard/rubrics?companyId=${companyId}&rubricId=${session.rubric_version.rubric.id}`}
-            className="px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/25 hover:border-violet-400 hover:bg-violet-600/10 text-violet-450 hover:text-violet-300 transition-all text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shadow"
+            className="px-3 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/25 hover:border-[#E05D38] hover:bg-[#E05D38] hover:text-white text-[#E05D38] transition-all text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
             title={`Open Rubrics Builder: ${session.rubric_version.rubric.title}`}
           >
             <Award className="h-3.5 w-3.5" />
@@ -494,33 +494,33 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
       </div>
 
       {/* Top Section: Session Summary Dashboard Banner */}
-      <div className="glass-card rounded-xl border border-white/5 overflow-hidden">
-        <div className="bg-slate-950/65 px-5 py-4 border-b border-white/5 flex items-center justify-between">
-          <h2 className="text-xs font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-400" />
+      <div className="glass-card rounded-xl border border-[#E3DBCF] overflow-hidden shadow-sm">
+        <div className="bg-[#FAF6EE] px-5 py-4 border-b border-[#E3DBCF] flex items-center justify-between">
+          <h2 className="text-xs font-black text-[#2B231F] uppercase tracking-widest flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-[#E05D38]" />
             Session Summary Dashboard
           </h2>
-          <span className="text-[10px] text-violet-400 font-extrabold uppercase bg-violet-650/10 border border-violet-500/30 px-3 py-1 rounded-full">
+          <span className="text-[10px] text-[#E05D38] font-extrabold uppercase bg-[#E05D38]/10 border border-[#E05D38]/30 px-3 py-1 rounded-full">
             {totalProductEvaluations} Total Evaluations
           </span>
         </div>
 
         {isLoading ? (
-          <div className="p-8 text-center text-slate-500 text-xs animate-pulse">
+          <div className="p-8 text-center text-[#7A6C62] text-xs animate-pulse">
             Calculating analytics metrics...
           </div>
         ) : calculatedAnalytics.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 text-xs italic">
+          <div className="p-8 text-center text-[#7A6C62] text-xs italic">
             No grading criteria configuration resolved for this session.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/5">
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E3DBCF]">
             {calculatedAnalytics.map((metric) => (
               <div key={metric.id} className="p-5 flex flex-col justify-between space-y-2">
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">
+                <span className="text-[9px] font-bold text-[#7A6C62] uppercase tracking-wider">
                   {metric.name}
                 </span>
-                <span className="text-xl font-black text-white tracking-tight">
+                <span className="text-xl font-bold text-[#2B231F] tracking-tight font-serif">
                   {metric.displayValue}
                 </span>
               </div>
@@ -530,15 +530,15 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
       </div>
 
       {/* Bottom Section: Detailed Evaluations */}
-      <div className="space-y-4">
+      <div className="space-y-4 font-sans">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest flex items-center gap-2">
-            <MessageSquare className="h-4.5 w-4.5 text-violet-500" />
+          <h2 className="text-sm font-bold text-[#2B231F] uppercase tracking-widest flex items-center gap-2">
+            <MessageSquare className="h-4.5 w-4.5 text-[#E05D38]" />
             Detailed Evaluations
           </h2>
           <button
             onClick={handleExportCSV}
-            className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-350 hover:text-white border border-white/5 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow"
+            className="px-3 py-1.5 rounded-lg bg-white hover:bg-[#FAF6EE] text-[#2B231F] border border-[#E3DBCF] text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
           >
             <Download className="h-3.5 w-3.5" />
             Export CSV
@@ -546,19 +546,19 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
         </div>
 
         {isLoading ? (
-          <div className="glass-card rounded-xl border border-white/5 p-8 text-center text-slate-500 text-xs animate-pulse">
+          <div className="glass-card rounded-xl border border-[#E3DBCF] p-8 text-center text-[#7A6C62] text-xs animate-pulse">
             Loading evaluation turns list...
           </div>
         ) : turns.length === 0 ? (
-          <div className="glass-card rounded-xl border border-white/5 p-8 text-center text-slate-500 text-xs italic">
+          <div className="glass-card rounded-xl border border-[#E3DBCF] p-8 text-center text-[#7A6C62] text-xs italic">
             No dialogue turns logged for this session yet.
           </div>
         ) : (
-          <div className="glass-card rounded-xl border border-white/5 overflow-hidden">
+          <div className="glass-card rounded-xl border border-[#E3DBCF] overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-950/65 border-b border-white/5 text-slate-400 uppercase tracking-widest text-[9px] font-bold">
+                  <tr className="bg-[#FAF6EE] border-b border-[#E3DBCF] text-[#7A6C62] uppercase tracking-widest text-[9px] font-bold">
                     <th className="p-4 w-10"></th>
                     <th className="p-4 w-28">Convo ID</th>
                     <th className="p-4 max-w-xs">Input</th>
@@ -573,7 +573,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                     <th className="p-4 w-12 text-right"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-slate-350">
+                <tbody className="divide-y divide-[#E3DBCF] text-[#2B231F]">
                   {paginatedTurns.map((turn, tIdx) => {
                     const convoId = getConversationId(turn, turn.turn_number - 1);
                     const isExpanded = !!expandedTurns[turn.id];
@@ -586,27 +586,27 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                           onClick={() => toggleRowExpand(turn.id)}
                           className={`transition-colors cursor-pointer ${
                             isMismatched 
-                              ? "bg-red-500/15 hover:bg-red-500/20 text-red-200" 
-                              : "hover:bg-white/[0.01] text-slate-350"
+                              ? "bg-red-500/15 hover:bg-red-500/20 text-red-900 font-bold" 
+                              : "hover:bg-[#FAF6EE] text-[#2B231F]"
                           }`}
                         >
                           <td className="p-4 text-center">
                             {isExpanded ? (
-                              <ChevronUp className="h-4 w-4 text-slate-500" />
+                              <ChevronUp className="h-4 w-4 text-[#7A6C62]" />
                             ) : (
-                              <ChevronDown className="h-4 w-4 text-slate-500" />
+                              <ChevronDown className="h-4 w-4 text-[#7A6C62]" />
                             )}
                           </td>
-                          <td className={`p-4 font-mono font-bold ${isMismatched ? "text-red-400" : "text-slate-300"}`}>
+                          <td className={`p-4 font-mono font-bold ${isMismatched ? "text-red-700" : "text-[#2B231F]"}`}>
                             {convoId}
                           </td>
-                          <td className="p-4 max-w-xs truncate text-slate-400 font-mono text-[11px]" title={turn.prompt}>
+                          <td className="p-4 max-w-xs truncate text-[#5C4F47] font-mono text-[11px]" title={turn.prompt}>
                             {turn.prompt}
                           </td>
-                          <td className="p-4 max-w-xs truncate text-slate-400 font-mono text-[11px]" title={turn.response}>
+                          <td className="p-4 max-w-xs truncate text-[#5C4F47] font-mono text-[11px]" title={turn.response}>
                             {turn.response}
                           </td>
-                          <td className="p-4 text-slate-400 whitespace-normal break-words min-w-[120px]" title={getRubricUsed(turn)}>
+                          <td className="p-4 text-[#5C4F47] whitespace-normal break-words min-w-[120px]" title={getRubricUsed(turn)}>
                             {getRubricUsed(turn)}
                           </td>
 
@@ -620,15 +620,15 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                             return (
                               <td key={crit.id} className="p-4 font-semibold">
                                 {isPass ? (
-                                  <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-450 text-[10px] font-bold uppercase tracking-wider">
+                                  <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
                                     {val}
                                   </span>
                                 ) : isFail ? (
-                                  <span className="px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 text-rose-450 text-[10px] font-bold uppercase tracking-wider animate-pulse">
+                                  <span className="px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/30 text-rose-700 text-[10px] font-bold uppercase tracking-wider animate-pulse">
                                     {val}
                                   </span>
                                 ) : (
-                                  <span className="text-slate-200">{val}</span>
+                                  <span className="text-[#2B231F]">{val}</span>
                                 )}
                               </td>
                             );
@@ -638,7 +638,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                             <button
                               type="button"
                               onClick={() => handleDeleteTurn(turn.id)}
-                              className="text-slate-500 hover:text-rose-450 p-1.5 rounded hover:bg-rose-950/20 transition-all cursor-pointer inline-flex items-center"
+                              className="text-[#7A6C62] hover:text-[#E05D38] p-1.5 rounded hover:bg-[#E05D38]/10 transition-all cursor-pointer inline-flex items-center"
                               title="Delete Evaluation Row"
                             >
                               <Trash2 className="h-3.5 w-3.5" />

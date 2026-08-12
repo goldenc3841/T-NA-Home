@@ -986,26 +986,26 @@ export default function RubricsPage() {
       </div>
 
       {!selectedCompanyId ? (
-        <div className="p-8 text-center bg-slate-900/20 border border-dashed border-white/5 rounded-xl text-slate-500 text-xs">
+        <div className="p-8 text-center bg-white border border-dashed border-[#E3DBCF] rounded-xl text-[#7A6C62] text-xs">
           Please select a client company to display or create a rubric.
         </div>
       ) : isLoading ? (
-        <div className="p-8 text-center text-slate-500 text-xs">
+        <div className="p-8 text-center text-[#7A6C62] text-xs">
           Loading rubric configuration...
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 font-sans">
           {/* Left Column: Details & Criteria Setup */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="glass-card rounded-xl border border-white/5 p-6 space-y-6">
-              <h2 className="text-base font-bold text-white flex items-center gap-2 border-b border-white/5 pb-3">
-                <FileSpreadsheet className="h-4.5 w-4.5 text-violet-400" />
+            <div className="glass-card rounded-xl border border-[#E3DBCF] p-6 space-y-6 shadow-sm">
+              <h2 className="text-base font-bold text-[#E05D38] flex items-center gap-2 border-b border-[#E3DBCF] pb-3 font-serif">
+                <FileSpreadsheet className="h-4.5 w-4.5 text-[#E05D38]" />
                 Rubric Details & Structure
               </h2>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
                     Rubric Title <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -1017,12 +1017,12 @@ export default function RubricsPage() {
                       setIsDirty(true);
                     }}
                     placeholder="e.g. Standard Text Quality Rubric"
-                    className="w-full bg-slate-950/40 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                    className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38]"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
                     Description
                   </label>
                   <textarea
@@ -1033,19 +1033,19 @@ export default function RubricsPage() {
                     }}
                     placeholder="Describe how evaluators should calibrate these scores..."
                     rows={2}
-                    className="w-full bg-slate-950/40 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                    className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38]"
                   />
                 </div>
               </div>
 
               {/* Criterion Inserter */}
-              <div className="p-4 bg-slate-900/40 rounded-xl border border-white/5 space-y-4">
-                <h3 className="text-xs font-bold text-slate-200">
+              <div className="p-4 bg-[#FAF6EE] rounded-xl border border-[#E3DBCF] space-y-4">
+                <h3 className="text-xs font-bold text-[#2B231F]">
                   {editingIndex !== null ? "Edit Evaluation Field / Criterion" : "Add Evaluation Field / Criterion"}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[9px] uppercase tracking-wider font-semibold text-slate-400">Field Name</label>
+                    <label className="text-[9px] uppercase tracking-wider font-semibold text-[#7A6C62]">Field Name</label>
                     <input
                       type="text"
                       value={critName}

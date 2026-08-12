@@ -258,26 +258,26 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
   );
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto py-2">
+    <div className="space-y-6 max-w-4xl mx-auto py-2 font-sans">
       {/* Clickable Breadcrumbs */}
-      <nav className="flex items-center gap-1.5 text-xs font-semibold text-slate-450">
+      <nav className="flex items-center gap-1.5 text-xs font-semibold text-[#7A6C62]">
         <Link 
           href={`/dashboard/companies/${companyId}`}
-          className="hover:text-slate-200 transition-colors uppercase tracking-wider text-[10px]"
+          className="hover:text-[#2B231F] transition-colors uppercase tracking-wider text-[10px]"
         >
           {companyName}
         </Link>
-        <ChevronRight className="h-3 w-3 text-slate-600" />
-        <span className="text-violet-400 border-b border-violet-500/30 pb-0.5 uppercase tracking-wider text-[10px]">
+        <ChevronRight className="h-3 w-3 text-[#7A6C62]" />
+        <span className="text-[#E05D38] border-b border-[#E05D38]/30 pb-0.5 uppercase tracking-wider text-[10px]">
           {productName}
         </span>
       </nav>
 
       {/* Header and Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#E3DBCF]">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-            <Layers className="h-6 w-6 text-violet-500" />
+          <h1 className="text-2xl font-bold text-[#E05D38] tracking-tight flex items-center gap-2 font-serif">
+            <Layers className="h-6 w-6 text-[#E05D38]" />
             Evaluation Sessions Log
           </h1>
         </div>
@@ -292,14 +292,14 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
               setSelectedRubricVersionId(activeRubricVersions[0].id);
               setIsStartEvalModalOpen(true);
             }}
-            className="px-3.5 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-lg"
+            className="px-3.5 py-2 rounded-lg bg-[#E05D38] hover:bg-[#C54824] text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
           >
             <Plus className="h-4 w-4" />
             Start New Evaluation
           </button>
           <Link
             href={`/dashboard/rubrics?companyId=${companyId}`}
-            className="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold border border-white/5 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-2 rounded-lg bg-white hover:bg-[#FAF6EE] text-[#2B231F] text-xs font-bold border border-[#E3DBCF] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
             <Plus className="h-4 w-4" />
             Create New Rubric
@@ -309,19 +309,19 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
 
       {/* Sessions Logs Table Section */}
       {isLoading ? (
-        <div className="glass-card rounded-xl border border-white/5 p-8 text-center text-slate-500 text-xs animate-pulse">
+        <div className="glass-card rounded-xl border border-[#E3DBCF] p-8 text-center text-[#7A6C62] text-xs animate-pulse">
           Loading sessions log database...
         </div>
       ) : sessions.length === 0 ? (
-        <div className="glass-card rounded-xl border border-white/5 p-8 text-center text-slate-500 text-xs">
+        <div className="glass-card rounded-xl border border-[#E3DBCF] p-8 text-center text-[#7A6C62] text-xs">
           No evaluation sessions logged under this product feature. Click "Start New Evaluation" to begin.
         </div>
       ) : (
-        <div className="glass-card rounded-xl border border-white/5 overflow-hidden">
+        <div className="glass-card rounded-xl border border-[#E3DBCF] overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left text-xs">
               <thead>
-                <tr className="bg-slate-950/65 border-b border-white/5 text-slate-500 uppercase tracking-widest text-[9px] font-bold">
+                <tr className="bg-[#FAF6EE] border-b border-[#E3DBCF] text-[#7A6C62] uppercase tracking-widest text-[9px] font-bold">
                   <th className="p-4">ID</th>
                   <th className="p-4">Session Name</th>
                   <th className="p-4">Rubric</th>

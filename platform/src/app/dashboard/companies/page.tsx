@@ -132,18 +132,18 @@ function CompaniesPageContent() {
   );
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto py-2">
+    <div className="space-y-6 max-w-4xl mx-auto py-2 font-sans">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-            <Building className="h-6 w-6 text-violet-500" />
+          <h1 className="text-2xl font-bold text-[#E05D38] tracking-tight flex items-center gap-2 font-serif">
+            <Building className="h-6 w-6 text-[#E05D38]" />
             All Clients
           </h1>
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer"
+          className="bg-[#E05D38] hover:bg-[#C54824] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
         >
           <Plus className="h-4 w-4" />
           Add New Client
@@ -152,7 +152,7 @@ function CompaniesPageContent() {
 
       {/* Search Input */}
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-550" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A6C62]" />
         <input
           type="text"
           placeholder="Search by company..."
@@ -161,52 +161,52 @@ function CompaniesPageContent() {
             setSearchQuery(e.target.value);
             setCurrentPage(1);
           }}
-          className="w-full pl-9 pr-4 py-2 bg-slate-950/40 border border-white/5 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
+          className="w-full pl-9 pr-4 py-2 bg-white border border-[#E3DBCF] rounded-lg text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38] transition-colors shadow-sm"
         />
       </div>
 
       {/* Table Section */}
       {isLoading ? (
-        <div className="glass-card rounded-xl border border-white/5 p-8 text-center text-slate-500 text-xs animate-pulse">
+        <div className="glass-card rounded-xl border border-[#E3DBCF] p-8 text-center text-[#7A6C62] text-xs animate-pulse">
           Loading clients database...
         </div>
       ) : (
-        <div className="glass-card rounded-xl border border-white/5 overflow-hidden">
+        <div className="glass-card rounded-xl border border-[#E3DBCF] overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left text-xs">
               <thead>
-                <tr className="bg-slate-950/65 border-b border-white/5 text-slate-400 uppercase tracking-widest text-[9px] font-bold">
+                <tr className="bg-[#FAF6EE] border-b border-[#E3DBCF] text-[#7A6C62] uppercase tracking-widest text-[9px] font-bold">
                   <th className="p-4">Client Name</th>
                   <th className="p-4">Last Activity</th>
                   <th className="p-4 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-[#E3DBCF]">
                 {paginatedCompanies.map((c) => {
                   const lastActiveDate = lastActivity[c.id];
                   return (
                     <tr 
                       key={c.id} 
                       onClick={() => router.push(`/dashboard/companies/${c.id}`)}
-                      className="hover:bg-white/[0.02] active:bg-white/[0.04] transition-colors cursor-pointer group"
+                      className="hover:bg-[#FAF6EE] active:bg-[#F2EBDC] transition-colors cursor-pointer group"
                     >
                       <td className="p-4">
-                        <span className="font-bold text-slate-200 group-hover:text-violet-400 transition-all text-left">
+                        <span className="font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-all text-left">
                           {c.name}
                         </span>
                       </td>
-                      <td className="p-4 text-slate-400">
+                      <td className="p-4 text-[#7A6C62]">
                         {lastActiveDate ? (
                           <span className="flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5 text-slate-500" />
+                            <Clock className="h-3.5 w-3.5 text-[#7A6C62]" />
                             {formatRelativeTime(lastActiveDate)} ago
                           </span>
                         ) : (
-                          <span className="text-slate-500 italic">No activity</span>
+                          <span className="text-[#7A6C62] italic">No activity</span>
                         )}
                       </td>
                       <td className="p-4 text-right">
-                        <span className="px-3.5 py-1.5 rounded-lg bg-violet-600/10 border border-violet-500/20 text-violet-450 group-hover:bg-violet-600 group-hover:text-white transition-all text-[11px] font-bold inline-block">
+                        <span className="px-3.5 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] group-hover:bg-[#E05D38] group-hover:text-white transition-all text-[11px] font-bold inline-block">
                           View Dashboard
                         </span>
                       </td>
@@ -215,7 +215,7 @@ function CompaniesPageContent() {
                 })}
                 {paginatedCompanies.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="p-8 text-center text-slate-500 italic">
+                    <td colSpan={3} className="p-8 text-center text-[#7A6C62] italic">
                       {searchQuery ? "No companies match your search." : "No clients registered."}
                     </td>
                   </tr>
@@ -226,22 +226,22 @@ function CompaniesPageContent() {
 
           {/* Pagination Footer */}
           {totalPages > 1 && (
-            <div className="p-4 border-t border-white/5 bg-slate-950/20 flex items-center justify-between text-xs text-slate-400">
+            <div className="p-4 border-t border-[#E3DBCF] bg-[#FAF6EE] flex items-center justify-between text-xs text-[#7A6C62]">
               <div>
-                Page <span className="font-semibold text-slate-200">{currentPage}</span> of <span className="font-semibold text-slate-200">{totalPages}</span>
+                Page <span className="font-semibold text-[#2B231F]">{currentPage}</span> of <span className="font-semibold text-[#2B231F]">{totalPages}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 rounded-lg bg-slate-950 border border-white/5 text-xs text-slate-400 hover:text-white disabled:opacity-40 disabled:hover:text-slate-400 transition-colors cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-[#E3DBCF] text-xs text-[#7A6C62] hover:text-[#2B231F] disabled:opacity-40 transition-colors cursor-pointer"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 rounded-lg bg-slate-950 border border-white/5 text-xs text-slate-400 hover:text-white disabled:opacity-40 disabled:hover:text-slate-400 transition-colors cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-[#E3DBCF] text-xs text-[#7A6C62] hover:text-[#2B231F] disabled:opacity-40 transition-colors cursor-pointer"
                 >
                   Next
                 </button>
@@ -255,40 +255,40 @@ function CompaniesPageContent() {
       {isCreateModalOpen && (
         <>
           <div 
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 animate-in fade-in duration-200"
+            className="fixed inset-0 bg-[#2B231F]/40 backdrop-blur-sm z-50 animate-in fade-in duration-200"
             onClick={() => setIsCreateModalOpen(false)}
           />
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-slate-900 border border-white/10 rounded-xl p-6 shadow-2xl z-50 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-white/5 mb-4">
-              <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
-                <Building className="h-4 w-4 text-violet-500" />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#FAF6EE] border border-[#E3DBCF] rounded-xl p-6 shadow-2xl z-50 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E3DBCF] mb-4">
+              <h3 className="text-sm font-bold text-[#2B231F] uppercase tracking-widest flex items-center gap-2">
+                <Building className="h-4 w-4 text-[#E05D38]" />
                 Add New Client Profile
               </h3>
               <button 
                 onClick={() => setIsCreateModalOpen(false)}
-                className="text-slate-500 hover:text-white transition-colors cursor-pointer"
+                className="text-[#7A6C62] hover:text-[#2B231F] transition-colors cursor-pointer"
               >
                 <X className="h-4.5 w-4.5" />
               </button>
             </div>
-            <form onSubmit={handleCreateCompany} className="space-y-4">
+            <form onSubmit={handleCreateCompany} className="space-y-4 font-sans">
               <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Company Name</label>
+                <label className="text-[10px] uppercase font-bold tracking-wider text-[#7A6C62] block">Company Name</label>
                 <input
                   type="text"
                   required
                   value={newCompanyName}
                   onChange={(e) => setNewCompanyName(e.target.value)}
                   placeholder="e.g. Globex"
-                  className="w-full bg-slate-950/40 border border-white/5 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-650 focus:outline-none focus:border-violet-500 transition-colors"
+                  className="w-full bg-white border border-[#E3DBCF] rounded-lg px-3 py-2 text-xs text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38] transition-colors"
                   disabled={isActionLoading}
                 />
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-white/5 mt-4">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#E3DBCF] mt-4">
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-950 hover:bg-slate-800 text-xs font-semibold text-slate-350 border border-white/5 transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-lg bg-white hover:bg-[#EDE7DC] text-xs font-semibold text-[#2B231F] border border-[#E3DBCF] transition-colors cursor-pointer"
                   disabled={isActionLoading}
                 >
                   Cancel
@@ -296,7 +296,7 @@ function CompaniesPageContent() {
                 <button
                   type="submit"
                   disabled={isActionLoading}
-                  className="px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-semibold text-white transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-lg bg-[#E05D38] hover:bg-[#C54824] text-xs font-semibold text-white transition-all cursor-pointer"
                 >
                   {isActionLoading ? "Creating..." : "Create Client"}
                 </button>

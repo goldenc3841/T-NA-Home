@@ -380,11 +380,11 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
   });
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto py-2">
+    <div className="space-y-6 max-w-6xl mx-auto py-2 font-sans">
       {/* Back button */}
       <button
         onClick={() => router.push("/dashboard/companies")}
-        className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors text-xs font-semibold cursor-pointer py-1"
+        className="flex items-center gap-2 text-[#7A6C62] hover:text-[#2B231F] transition-colors text-xs font-semibold cursor-pointer py-1"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Clients
@@ -393,14 +393,14 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-2">
-            <Building className="h-7 w-7 text-violet-500" />
+          <h1 className="text-3xl font-bold text-[#E05D38] tracking-tight flex items-center gap-2 font-serif">
+            <Building className="h-7 w-7 text-[#E05D38]" />
             {company?.name || "Client Workspace"}
           </h1>
         </div>
         <button
           onClick={() => setIsAddProductModalOpen(true)}
-          className="bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-lg"
+          className="bg-[#E05D38] hover:bg-[#C54824] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
         >
           <Plus className="h-4 w-4" />
           Add New Product
@@ -409,15 +409,15 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
 
       {/* Products/Features Pills (Top Section) */}
       <div className="space-y-2">
-        <h2 className="text-[10px] uppercase font-bold tracking-widest text-slate-500">Products</h2>
+        <h2 className="text-[10px] uppercase font-bold tracking-widest text-[#7A6C62]">Products</h2>
         {isLoading ? (
           <div className="flex gap-3 overflow-x-auto pb-2">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="glass-card h-14 w-48 rounded-xl border border-white/5 animate-pulse" />
+              <div key={n} className="glass-card h-14 w-48 rounded-xl border border-[#E3DBCF] animate-pulse" />
             ))}
           </div>
         ) : features.length === 0 ? (
-          <div className="glass-card rounded-xl border border-white/5 p-4 text-center text-slate-500 text-xs">
+          <div className="glass-card rounded-xl border border-[#E3DBCF] p-4 text-center text-[#7A6C62] text-xs">
             No products added yet. Click "+ Add New Product" to start.
           </div>
         ) : (
@@ -426,10 +426,10 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
               <Link
                 key={product.id}
                 href={`/dashboard/companies/${companyId}/products/${product.id}`}
-                className="glass-card rounded-xl border border-white/5 p-4 text-left cursor-pointer transition-all duration-300 w-52 shrink-0 flex flex-col justify-between hover:border-violet-500/40 hover:bg-white/5 group"
+                className="glass-card rounded-xl border border-[#E3DBCF] p-4 text-left cursor-pointer transition-all duration-300 w-52 shrink-0 flex flex-col justify-between hover:border-[#E05D38] hover:bg-white group shadow-sm"
               >
                 <div className="flex justify-between items-start gap-2">
-                  <span className="font-bold text-xs text-slate-200 group-hover:text-violet-400 transition-colors truncate">
+                  <span className="font-bold text-xs text-[#2B231F] group-hover:text-[#E05D38] transition-colors truncate">
                     {product.name}
                   </span>
                   <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
@@ -440,15 +440,15 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                         e.stopPropagation();
                         handleDeleteProduct(product.id, product.name);
                       }}
-                      className="text-slate-500 hover:text-rose-450 p-1 rounded hover:bg-rose-950/20 transition-all cursor-pointer inline-flex items-center opacity-0 group-hover:opacity-100 focus:opacity-100"
+                      className="text-[#7A6C62] hover:text-[#E05D38] p-1 rounded hover:bg-[#E05D38]/10 transition-all cursor-pointer inline-flex items-center opacity-0 group-hover:opacity-100 focus:opacity-100"
                       title={`Delete ${product.name}`}
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
-                    <ChevronRight className="h-3.5 w-3.5 mt-0.5 text-slate-500 group-hover:text-white transition-transform group-hover:translate-x-0.5" />
+                    <ChevronRight className="h-3.5 w-3.5 mt-0.5 text-[#7A6C62] group-hover:text-[#2B231F] transition-transform group-hover:translate-x-0.5" />
                   </div>
                 </div>
-                <p className="text-[10px] text-slate-550 line-clamp-1 mt-1.5 leading-normal">
+                <p className="text-[10px] text-[#7A6C62] line-clamp-1 mt-1.5 leading-normal">
                   {product.description || "No description provided."}
                 </p>
               </Link>
@@ -462,61 +462,61 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
         
         {/* Left Column: Client Rubrics (2/5 width) */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="glass-card rounded-xl border border-white/5 p-5">
-            <div className="flex justify-between items-center pb-3 border-b border-white/5 mb-4">
-              <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest flex items-center gap-2 truncate">
-                <Settings className="h-4.5 w-4.5 text-violet-450" />
+          <div className="glass-card rounded-xl border border-[#E3DBCF] p-5 shadow-sm">
+            <div className="flex justify-between items-center pb-3 border-b border-[#E3DBCF] mb-4">
+              <h2 className="text-sm font-bold text-[#2B231F] uppercase tracking-widest flex items-center gap-2 truncate">
+                <Settings className="h-4.5 w-4.5 text-[#E05D38]" />
                 <Link 
                   href={`/dashboard/rubrics?companyId=${companyId}`}
-                  className="hover:text-violet-400 hover:underline transition-colors"
+                  className="hover:text-[#E05D38] hover:underline transition-colors"
                 >
                   {company?.name || "Client"} Rubrics
                 </Link>
               </h2>
               <Link
                 href={`/dashboard/rubrics?companyId=${companyId}&rubricId=new`}
-                className="text-[10px] font-extrabold text-violet-400 hover:text-violet-300 hover:underline transition-colors"
+                className="text-[10px] font-extrabold text-[#E05D38] hover:text-[#C54824] hover:underline transition-colors"
               >
                 + New
               </Link>
             </div>
 
             {isLoading ? (
-              <div className="text-slate-500 text-xs py-8 text-center animate-pulse">Loading rubrics...</div>
+              <div className="text-[#7A6C62] text-xs py-8 text-center animate-pulse">Loading rubrics...</div>
             ) : rubrics.length === 0 ? (
-              <div className="text-slate-500 text-xs py-8 text-center">No rubrics registered for this company.</div>
+              <div className="text-[#7A6C62] text-xs py-8 text-center">No rubrics registered for this company.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-left text-xs">
                   <thead>
-                    <tr className="bg-slate-950/65 border-b border-white/5 text-slate-500 uppercase tracking-widest text-[9px] font-bold">
+                    <tr className="bg-[#FAF6EE] border-b border-[#E3DBCF] text-[#7A6C62] uppercase tracking-widest text-[9px] font-bold">
                       <th className="p-3">ID</th>
                       <th className="p-3">Name</th>
                       <th className="p-3 text-right">Last Activity</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-[#E3DBCF]">
                     {rubrics.map((rubric) => {
                       return (
                         <tr 
                           key={rubric.id} 
                           onClick={() => router.push(`/dashboard/rubrics?companyId=${companyId}&rubricId=${rubric.id}`)}
-                          className="hover:bg-white/[0.02] active:bg-white/[0.04] transition-colors cursor-pointer group text-slate-350"
+                          className="hover:bg-[#FAF6EE] active:bg-[#F2EBDC] transition-colors cursor-pointer group text-[#2B231F]"
                         >
-                          <td className="p-3 font-mono text-[9px] text-slate-450">
+                          <td className="p-3 font-mono text-[9px] text-[#7A6C62]">
                             {rubric.id.substring(0, 8)}
                           </td>
-                          <td className="p-3 font-bold text-slate-200 group-hover:text-violet-400 transition-colors truncate max-w-[120px]" title={rubric.title}>
+                          <td className="p-3 font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors truncate max-w-[120px]" title={rubric.title}>
                             {rubric.title}
                           </td>
-                          <td className="p-3 text-right text-slate-400">
+                          <td className="p-3 text-right text-[#7A6C62]">
                             {rubricLastActivity[rubric.id] ? (
                               <span className="inline-flex items-center gap-1.5 justify-end">
-                                <Clock className="h-3.5 w-3.5 text-slate-500" />
+                                <Clock className="h-3.5 w-3.5 text-[#7A6C62]" />
                                 {formatRelativeTime(rubricLastActivity[rubric.id])} ago
                               </span>
                             ) : (
-                              <span className="text-slate-500 italic text-[10px]">No activity</span>
+                              <span className="text-[#7A6C62] italic text-[10px]">No activity</span>
                             )}
                           </td>
                         </tr>
@@ -531,10 +531,10 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
 
         {/* Right Column: Evaluation Sessions (3/5 width) */}
         <div className="lg:col-span-3 space-y-4">
-          <div className="glass-card rounded-xl border border-white/5 p-5">
-            <div className="flex justify-between items-center pb-3 border-b border-white/5 mb-4">
-              <h2 className="text-sm font-bold text-slate-200 uppercase tracking-widest flex items-center gap-2">
-                <FileText className="h-4.5 w-4.5 text-violet-450" />
+          <div className="glass-card rounded-xl border border-[#E3DBCF] p-5 shadow-sm">
+            <div className="flex justify-between items-center pb-3 border-b border-[#E3DBCF] mb-4">
+              <h2 className="text-sm font-bold text-[#2B231F] uppercase tracking-widest flex items-center gap-2">
+                <FileText className="h-4.5 w-4.5 text-[#E05D38]" />
                 Evaluation Sessions
               </h2>
               <button
@@ -553,16 +553,16 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                   setNewSessionDesc("");
                   setIsStartEvalModalOpen(true);
                 }}
-                className="px-3 py-1.5 rounded-lg bg-violet-600/15 border border-violet-500/20 text-violet-450 hover:bg-violet-600 hover:text-white transition-all text-[11px] font-bold cursor-pointer"
+                className="px-3 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-[11px] font-bold cursor-pointer"
               >
                 + Start New Evaluation
               </button>
             </div>
 
             {isLoading ? (
-              <div className="text-slate-500 text-xs py-8 text-center animate-pulse">Loading evaluations...</div>
+              <div className="text-[#7A6C62] text-xs py-8 text-center animate-pulse">Loading evaluations...</div>
             ) : filteredSessions.length === 0 ? (
-              <div className="text-slate-500 text-xs py-8 text-center">
+              <div className="text-[#7A6C62] text-xs py-8 text-center">
                 {selectedProductId ? "No evaluations for this product." : "No evaluation sessions recorded yet."}
               </div>
             ) : (
@@ -570,7 +570,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-left text-xs">
                     <thead>
-                      <tr className="bg-slate-950/65 border-b border-white/5 text-slate-500 uppercase tracking-widest text-[9px] font-bold">
+                      <tr className="bg-[#FAF6EE] border-b border-[#E3DBCF] text-[#7A6C62] uppercase tracking-widest text-[9px] font-bold">
                         <th className="p-3">ID</th>
                         <th className="p-3">Session Name</th>
                         <th className="p-3">Product</th>
@@ -579,36 +579,36 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                         <th className="p-3">Last Activity</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-[#E3DBCF]">
                       {paginatedSessions.map((session) => (
                         <tr 
                           key={session.id} 
                           onClick={() => router.push(`/dashboard/companies/${companyId}/products/${session.feature?.id}/sessions/${session.id}`)}
-                          className="hover:bg-white/[0.02] transition-colors text-slate-300 cursor-pointer"
+                          className="hover:bg-[#FAF6EE] transition-colors text-[#2B231F] cursor-pointer"
                         >
-                          <td className="p-3 font-mono text-[10px] text-slate-400">
+                          <td className="p-3 font-mono text-[10px] text-[#7A6C62]">
                             {session.id.substring(0, 8)}
                           </td>
-                          <td className="p-3 font-semibold text-slate-200 truncate max-w-[130px]" title={session.name}>
+                          <td className="p-3 font-semibold text-[#2B231F] truncate max-w-[130px]" title={session.name}>
                             {session.name}
                           </td>
                           <td className="p-3">
                             <span 
-                              className="font-semibold text-slate-200 truncate max-w-[120px] block"
+                              className="font-semibold text-[#2B231F] truncate max-w-[120px] block"
                               title={session.feature?.name}
                             >
                               {session.feature?.name}
                             </span>
                           </td>
-                          <td className="p-3 text-slate-400 truncate max-w-[120px]" title={session.rubric_version?.rubric?.title}>
+                          <td className="p-3 text-[#7A6C62] truncate max-w-[120px]" title={session.rubric_version?.rubric?.title}>
                             {session.rubric_version?.rubric?.title}
                           </td>
-                          <td className="p-3 text-slate-450 text-[10px]">
+                          <td className="p-3 text-[#7A6C62] text-[10px]">
                             {new Date(session.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                           </td>
-                          <td className="p-3 text-slate-400">
+                          <td className="p-3 text-[#7A6C62]">
                             <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3 text-slate-500" />
+                              <Clock className="h-3 w-3 text-[#7A6C62]" />
                               {formatRelativeTime(session.updated_at)} ago
                             </span>
                           </td>
@@ -620,22 +620,22 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-white/5">
+                  <div className="flex items-center justify-between text-xs text-[#7A6C62] pt-2 border-t border-[#E3DBCF]">
                     <div>
-                      Page <span className="font-semibold text-slate-200">{currentPage}</span> of <span className="font-semibold text-slate-200">{totalPages}</span>
+                      Page <span className="font-semibold text-[#2B231F]">{currentPage}</span> of <span className="font-semibold text-[#2B231F]">{totalPages}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                         disabled={currentPage === 1}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-white/5 text-xs hover:text-white disabled:opacity-40 disabled:hover:text-slate-400 transition-colors cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E3DBCF] text-xs text-[#7A6C62] hover:text-[#2B231F] disabled:opacity-40 transition-colors cursor-pointer"
                       >
                         Previous
                       </button>
                       <button
                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                         disabled={currentPage === totalPages}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-white/5 text-xs hover:text-white disabled:opacity-40 disabled:hover:text-slate-400 transition-colors cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E3DBCF] text-xs text-[#7A6C62] hover:text-[#2B231F] disabled:opacity-40 transition-colors cursor-pointer"
                       >
                         Next
                       </button>
