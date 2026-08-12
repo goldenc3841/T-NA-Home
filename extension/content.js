@@ -498,6 +498,7 @@
               <option value="new">Create New Session...</option>
             </select>
             <input type="text" id="tna-session-name" placeholder="Enter session name..." class="hidden" style="margin-top: 6px;">
+            <input type="text" id="tna-session-desc" placeholder="Session description (optional)..." class="hidden" style="margin-top: 6px;">
           </div>
         </div>
 
@@ -846,16 +847,33 @@
     validateForm();
   }
 
+  function getFormattedDateName(d = new Date()) {
+    const months = ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."];
+    const month = months[d.getMonth()];
+    const day = d.getDate();
+    const year = d.getFullYear();
+    
+    let suffix = "th";
+    if (day % 10 === 1 && day !== 11) suffix = "st";
+    else if (day % 10 === 2 && day !== 12) suffix = "nd";
+    else if (day % 10 === 3 && day !== 13) suffix = "rd";
+    
+    return `${month} ${day}${suffix}, ${year}`;
+  }
+
   function handleSessionChange(e) {
     selectedSessionId = e.target.value;
     const sessionNameInput = shadowRoot.getElementById("tna-session-name");
+    const sessionDescInput = shadowRoot.getElementById("tna-session-desc");
     
     if (selectedSessionId === "new") {
       sessionNameInput.classList.remove("hidden");
-      newSessionName = "";
-      sessionNameInput.value = "";
+      if (sessionDescInput) sessionDescInput.classList.remove("hidden");
+      newSessionName = getFormattedDateName();
+      sessionNameInput.value = newSessionName;
     } else {
       sessionNameInput.classList.add("hidden");
+      if (sessionDescInput) sessionDescInput.classList.add("hidden");
     }
     validateForm();
   }
@@ -1115,8 +1133,9 @@
     const payload = {
       session_id: selectedSessionId === "new" ? null : selectedSessionId,
       feature_id: selectedFeatureId,
-      rubric_version_id: activeRubricVersion.id,
+      rubric_version_id: activeRubricVersion ? activeRubricVersion.id : null,
       session_name: selectedSessionId === "new" ? newSessionName : null,
+      session_description: selectedSessionId === "new" ? (shadowRoot.getElementById("tna-session-desc")?.value.trim() || null) : null,
       prompt: capturedPrompt,
       response: capturedResponse,
       source_url: window.location.href,
