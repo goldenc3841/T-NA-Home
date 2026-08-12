@@ -687,32 +687,32 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
 
                         {/* Collapsible Sub-Row Details */}
                         {isExpanded && (
-                          <tr className="bg-slate-950/30">
-                            <td colSpan={criteria.length + 6} className="p-5 border-b border-white/5 space-y-4">
+                          <tr className="bg-[#FAF6EE]/50">
+                            <td colSpan={criteria.length + 6} className="p-5 border-b border-[#E3DBCF] space-y-4">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                  <span className="text-[9px] font-bold text-violet-400 uppercase tracking-wider block">Prompt Input</span>
-                                  <div className="bg-slate-950/60 rounded-xl p-3 border border-white/5 font-mono text-[11px] text-slate-350 leading-relaxed whitespace-pre-wrap">
+                                  <span className="text-[9px] font-bold text-[#E05D38] uppercase tracking-wider block">Prompt Input</span>
+                                  <div className="bg-white rounded-xl p-3 border border-[#E3DBCF] font-mono text-[11px] text-[#2B231F] shadow-sm leading-relaxed whitespace-pre-wrap">
                                     {turn.prompt}
                                   </div>
                                 </div>
                                 <div className="space-y-1.5">
-                                  <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block">Response Output</span>
-                                  <div className="bg-slate-950/60 rounded-xl p-3 border border-white/5 font-mono text-[11px] text-slate-350 leading-relaxed whitespace-pre-wrap">
+                                  <span className="text-[9px] font-bold text-emerald-700 uppercase tracking-wider block">Response Output</span>
+                                  <div className="bg-white rounded-xl p-3 border border-[#E3DBCF] font-mono text-[11px] text-[#2B231F] shadow-sm leading-relaxed whitespace-pre-wrap">
                                     {turn.response}
                                   </div>
                                 </div>
                               </div>
 
                               {/* URL Source and detail metadata */}
-                              <div className="flex items-center justify-between text-[10px] text-slate-500 pt-2 border-t border-white/5">
-                                <span>Turn Dialogue number: <span className="font-semibold text-slate-400">{turn.turn_number}</span></span>
+                              <div className="flex items-center justify-between text-[10px] text-[#7A6C62] pt-2 border-t border-[#E3DBCF]">
+                                <span>Turn Dialogue number: <span className="font-bold text-[#2B231F]">{turn.turn_number}</span></span>
                                 {turn.source_url && (
                                   <a 
                                     href={turn.source_url} 
                                     target="_blank" 
                                     rel="noreferrer" 
-                                    className="hover:text-violet-400 transition-colors flex items-center gap-1 font-semibold"
+                                    className="hover:text-[#E05D38] transition-colors flex items-center gap-1 font-bold text-[#2B231F]"
                                   >
                                     URL Link Source
                                     <ExternalLink className="h-3 w-3" />
@@ -722,14 +722,14 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
 
                               {/* Sub notes lists */}
                               {turn.scores?.some(s => s.notes) && (
-                                <div className="space-y-2 mt-3 pt-3 border-t border-white/5 bg-slate-900/30 rounded-lg p-3">
-                                  <span className="text-[9px] font-bold text-slate-450 uppercase tracking-wider block">Scoring Guidelines Notes</span>
+                                <div className="space-y-2 mt-3 pt-3 border-t border-[#E3DBCF] bg-white rounded-lg p-3 border shadow-sm">
+                                  <span className="text-[9px] font-bold text-[#7A6C62] uppercase tracking-wider block">Scoring Guidelines Notes</span>
                                   {turn.scores.map(s => {
                                     if (!s.notes) return null;
                                     const critName = criteria.find(c => c.id === s.criterion_id)?.name || "Criterion";
                                     return (
-                                      <div key={s.id} className="text-[11px] text-slate-400 leading-normal">
-                                        <span className="font-semibold text-slate-350">{critName}:</span> &ldquo;{s.notes}&rdquo;
+                                      <div key={s.id} className="text-[11px] text-[#7A6C62] leading-normal">
+                                        <span className="font-bold text-[#2B231F]">{critName}:</span> &ldquo;{s.notes}&rdquo;
                                       </div>
                                     );
                                   })}
@@ -745,24 +745,24 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
               </table>
             </div>
 
-            {/* Pagination Controls */}
+            {/* Pagination Controls Footer */}
             {totalPages > 1 && (
-              <div className="p-4 border-t border-white/5 bg-slate-950/20 flex items-center justify-between text-xs text-slate-400">
+              <div className="p-4 border-t border-[#E3DBCF] bg-[#FAF6EE] flex items-center justify-between text-xs text-[#7A6C62]">
                 <div>
-                  Page <span className="font-semibold text-slate-200">{currentPage}</span> of <span className="font-semibold text-slate-200">{totalPages}</span>
+                  Page <span className="font-bold text-[#2B231F]">{currentPage}</span> of <span className="font-bold text-[#2B231F]">{totalPages}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
-                    className="px-3 py-1.5 rounded-lg bg-slate-950 border border-white/5 text-xs text-slate-400 hover:text-white disabled:opacity-40 disabled:hover:text-slate-450 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-white border border-[#E3DBCF] text-xs font-bold text-[#2B231F] hover:bg-[#FAF6EE] hover:border-[#E05D38] disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-[#E3DBCF] transition-all cursor-pointer shadow-sm"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1.5 rounded-lg bg-slate-950 border border-white/5 text-xs text-slate-400 hover:text-white disabled:opacity-40 disabled:hover:text-slate-450 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-white border border-[#E3DBCF] text-xs font-bold text-[#2B231F] hover:bg-[#FAF6EE] hover:border-[#E05D38] disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-[#E3DBCF] transition-all cursor-pointer shadow-sm"
                   >
                     Next
                   </button>
