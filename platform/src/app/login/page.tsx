@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Lock, Mail, AlertTriangle, User } from "lucide-react";
+import { Lock, Mail, AlertTriangle } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,58 +11,26 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg("");
-    setSuccessMsg("");
 
     try {
-      if (isSignUp) {
-        if (!firstName.trim() || !lastName.trim()) {
-          throw new Error("First name and last name are required");
-        }
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: `${firstName.trim()} ${lastName.trim()}`,
-            },
-          },
-        });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (error) {
-          throw error;
-        }
-
-        if (data.session) {
-          router.refresh();
-          router.push("/dashboard");
-        } else {
-          setSuccessMsg("Account created successfully! Please check your email to verify and log in.");
-          setIsLoading(false);
-        }
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        router.refresh();
-        router.push("/dashboard");
+      if (error) {
+        throw error;
       }
+
+      router.refresh();
+      router.push("/dashboard");
     } catch (err: unknown) {
       const error = err as Error;
       setErrorMsg(error.message || "An unexpected error occurred.");
@@ -82,10 +50,10 @@ export default function LoginPage() {
             T
           </div>
           <h1 className="text-2xl font-serif font-bold text-[#2B231F]">
-            {isSignUp ? "Create your account" : "Welcome to TNA Home"}
+            Welcome to TNA Home
           </h1>
           <p className="text-xs text-[#7A6C62] font-semibold mt-1.5">
-            {isSignUp ? "Sign up to start evaluating responses" : "Sign in to start evaluating responses"}
+            Sign in to start evaluating responses
           </p>
         </div>
 
@@ -96,53 +64,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        {successMsg && (
-          <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 text-xs font-semibold flex items-start gap-3">
-            <span className="shrink-0 text-emerald-700 font-bold">✓</span>
-            <span>{successMsg}</span>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-5">
-          {isSignUp && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
-                  First Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A6C62]" />
-                  <input
-                    type="text"
-                    required
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="John"
-                    className="w-full bg-white border border-[#E3DBCF] rounded-xl py-2.5 pl-11 pr-4 text-xs font-semibold text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38] focus:ring-1 focus:ring-[#E05D38] transition-all shadow-sm"
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
-                  Last Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A6C62]" />
-                  <input
-                    type="text"
-                    required
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Doe"
-                    className="w-full bg-white border border-[#E3DBCF] rounded-xl py-2.5 pl-11 pr-4 text-xs font-semibold text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38] focus:ring-1 focus:ring-[#E05D38] transition-all shadow-sm"
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
               Email Address
@@ -184,23 +106,9 @@ export default function LoginPage() {
             disabled={isLoading}
             className="w-full mt-2 py-3 rounded-xl bg-[#E05D38] hover:bg-[#C54824] text-white font-bold text-xs uppercase tracking-wider cursor-pointer shadow-md shadow-[#E05D38]/20 transition-all flex items-center justify-center gap-2"
           >
-            {isLoading ? (isSignUp ? "Creating account..." : "Signing in...") : (isSignUp ? "Create Account" : "Sign In")}
+            {isLoading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={() => {
-              setIsSignUp(!isSignUp);
-              setErrorMsg("");
-              setSuccessMsg("");
-            }}
-            className="text-xs text-[#E05D38] hover:text-[#C54824] font-bold transition-colors cursor-pointer"
-          >
-            {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
-          </button>
-        </div>
       </div>
     </div>
   );
