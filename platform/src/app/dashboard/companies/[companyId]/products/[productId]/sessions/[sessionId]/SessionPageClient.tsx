@@ -596,6 +596,29 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
     return <div className="space-y-2">{elements}</div>;
   }
 
+  function formatCellSummary(text: string) {
+    if (!text) return "";
+    
+    const hasImage = text.includes("![") || text.includes("[Captured SVG Image]") || text.includes("[Background Image]");
+
+    if (hasImage) {
+      const cleanText = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, "").replace(/\[Captured SVG Image\]/g, "").replace(/\[Background Image\]/g, "").trim();
+
+      if (!cleanText) {
+        return <span className="italic text-[#7A6C62] font-serif">Image</span>;
+      }
+
+      return (
+        <span>
+          <span className="italic text-[#7A6C62] font-serif mr-1">Image</span>
+          <span>{cleanText}</span>
+        </span>
+      );
+    }
+
+    return text;
+  }
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto py-2">
       {/* Clickable Breadcrumbs */}
@@ -757,10 +780,10 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                             </div>
                           </td>
                           <td className="p-4 max-w-xs truncate text-[#5C4F47] font-mono text-[11px]" title={turn.prompt}>
-                            {turn.prompt}
+                            {formatCellSummary(turn.prompt)}
                           </td>
                           <td className="p-4 max-w-xs truncate text-[#5C4F47] font-mono text-[11px]" title={turn.response}>
-                            {turn.response}
+                            {formatCellSummary(turn.response)}
                           </td>
                           <td className="p-4 text-[#5C4F47] whitespace-normal break-words min-w-[120px]" title={getRubricUsed(turn)}>
                             {getRubricUsed(turn)}
