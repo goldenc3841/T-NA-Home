@@ -270,6 +270,32 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
     }
   };
 
+  // Helper to format PST timestamp stacked (Time on top, MM/DD date below)
+  function formatPstTimestamp(dateString?: string) {
+    if (!dateString) return { time: "N/A", date: "N/A" };
+    try {
+      const d = new Date(dateString);
+      const timeStr = d.toLocaleTimeString("en-US", {
+        timeZone: "America/Los_Angeles",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+      });
+      const dateParts = d.toLocaleDateString("en-US", {
+        timeZone: "America/Los_Angeles",
+        month: "2-digit",
+        day: "2-digit"
+      });
+      const mmdd = dateParts.split("/").slice(0, 2).join("/");
+      return {
+        time: timeStr,
+        date: mmdd
+      };
+    } catch {
+      return { time: "N/A", date: "N/A" };
+    }
+  }
+
   // Export Detailed Evaluations table to downloadable CSV file
   const handleExportCSV = () => {
     if (turns.length === 0) {
@@ -279,6 +305,8 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
 
     const headers = [
       "Convo ID",
+      "Submitted Time (PST)",
+      "Submitted Date (MM/DD)",
       "Input",
       "Output",
       "Rubric Used",
@@ -294,6 +322,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
 
     const rows = turns.map((turn) => {
       const convoId = getConversationId(turn, turn.turn_number - 1);
+      const pst = formatPstTimestamp(turn.created_at);
       const rubricUsed = getRubricUsed(turn);
       const note = turn.scores?.find(s => s.notes)?.notes || "";
       const criteriaScores = criteria.map(crit => {
@@ -303,6 +332,8 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
 
       return [
         convoId,
+        pst.time,
+        pst.date,
         turn.prompt,
         turn.response,
         rubricUsed,
@@ -315,8 +346,8 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    const clientClean = companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    const dateClean = new Date().toISOString().split("T")[0];
+    const clientClean = companyName ? companyName.toLowerCase().replace(/[^a-z0-9]/g, "-") : "company";
+    const dateClean = new Date().toISOString().slice(0, 10);
     
     link.setAttribute("href", url);
     link.setAttribute("download", `${clientClean}-evaluations-${dateClean}.csv`);
@@ -561,6 +592,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                   <tr className="bg-[#FAF6EE] border-b border-[#E3DBCF] text-[#7A6C62] uppercase tracking-widest text-[9px] font-bold">
                     <th className="p-4 w-10"></th>
                     <th className="p-4 w-28">Convo ID</th>
+                    <th className="p-4 w-28">Date / Time</th>
                     <th className="p-4 max-w-xs">Input</th>
                     <th className="p-4 max-w-xs">Output</th>
                     <th className="p-4 w-40">Rubric Used</th>
@@ -576,6 +608,7 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                 <tbody className="divide-y divide-[#E3DBCF] text-[#2B231F]">
                   {paginatedTurns.map((turn, tIdx) => {
                     const convoId = getConversationId(turn, turn.turn_number - 1);
+                    const pst = formatPstTimestamp(turn.created_at);
                     const isExpanded = !!expandedTurns[turn.id];
                     const isMismatched = hasMismatchedCriteria(turn);
  
@@ -599,6 +632,12 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                           </td>
                           <td className={`p-4 font-mono font-bold ${isMismatched ? "text-red-700" : "text-[#2B231F]"}`}>
                             {convoId}
+                          </td>
+                          <td className="p-4 whitespace-nowrap">
+                            <div className="flex flex-col leading-tight">
+                              <span className="font-bold text-[#2B231F] text-xs">{pst.time}</span>
+                              <span className="text-[10px] text-[#7A6C62] font-extrabold tracking-wider">{pst.date}</span>
+                            </div>
                           </td>
                           <td className="p-4 max-w-xs truncate text-[#5C4F47] font-mono text-[11px]" title={turn.prompt}>
                             {turn.prompt}
