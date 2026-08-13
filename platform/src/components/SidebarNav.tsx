@@ -35,6 +35,7 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
   const [isInviting, setIsInviting] = useState(false);
   const [inviteError, setInviteError] = useState("");
   const [inviteSuccess, setInviteSuccess] = useState("");
+  const [generatedActionLink, setGeneratedActionLink] = useState("");
 
   const fetchCompanies = async () => {
     setLoadingCompanies(true);
@@ -57,6 +58,7 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
   const openInviteModal = () => {
     setInviteError("");
     setInviteSuccess("");
+    setGeneratedActionLink("");
     setIsInviteModalOpen(true);
     fetchCompanies();
   };
@@ -84,6 +86,7 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
     e.preventDefault();
     setInviteError("");
     setInviteSuccess("");
+    setGeneratedActionLink("");
 
     if (!inviteEmail.trim()) {
       setInviteError("Please enter a valid email address.");
@@ -112,7 +115,10 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
         throw new Error(data.error || "Failed to send user invitation.");
       }
 
-      setInviteSuccess(data.message || `Invitation sent successfully to ${inviteEmail}`);
+      setInviteSuccess(data.message || `Invitation created for ${inviteEmail}`);
+      if (data.action_link) {
+        setGeneratedActionLink(data.action_link);
+      }
       setInviteEmail("");
     } catch (err: any) {
       setInviteError(err.message || "Failed to send user invitation.");
@@ -252,6 +258,32 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
               <div className="mb-4 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 text-xs font-semibold flex items-start gap-2.5">
                 <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-emerald-700" />
                 <span>{inviteSuccess}</span>
+              </div>
+            )}
+
+            {generatedActionLink && (
+              <div className="mb-5 p-4 bg-white border border-[#E3DBCF] rounded-xl space-y-2 shadow-sm">
+                <span className="text-[10px] font-bold text-[#E05D38] uppercase tracking-wider block">
+                  Copy Direct Invitation Link
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={generatedActionLink}
+                    className="w-full bg-[#FAF6EE] border border-[#E3DBCF] rounded-lg p-2 text-[10px] font-mono text-[#2B231F] truncate outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedActionLink);
+                      alert("Direct invitation link copied to clipboard!");
+                    }}
+                    className="px-3.5 py-2 bg-[#E05D38] hover:bg-[#C54824] text-white text-xs font-bold rounded-lg shrink-0 transition-colors shadow-sm cursor-pointer"
+                  >
+                    Copy
+                  </button>
+                </div>
               </div>
             )}
 

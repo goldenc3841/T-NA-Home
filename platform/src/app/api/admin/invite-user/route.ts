@@ -57,25 +57,46 @@ export async function POST(request: Request) {
       },
     });
 
-    // 3. Send User Invitation
+    // 3. Send User Invitation via Email or Generate Direct Invite Link
     const origin = new URL(request.url).origin;
-    const { data, error } = await adminClient.auth.admin.inviteUserByEmail(targetEmail, {
+    const inviteOptions = {
       redirectTo: `${origin}/auth/callback?next=/update-password`,
       data: {
         full_name: targetEmail,
         role: role,
         company_id: company_id,
       },
-    });
+    };
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    let inviteMessage = `Invitation email sent successfully to ${targetEmail}`;
+    let actionLink: string | null = null;
+
+    const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
+      targetEmail,
+      inviteOptions
+    );
+
+    if (inviteError) {
+      // If email rate limit is hit or email sending fails, generate a direct invite link as fallback
+      const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+        type: "invite",
+        email: targetEmail,
+        options: inviteOptions,
+      });
+
+      if (linkError) {
+        return NextResponse.json({ error: inviteError.message || linkError.message }, { status: 400 });
+      }
+
+      actionLink = linkData.properties?.action_link || null;
+      inviteMessage = `Email rate limit reached on Supabase. Here is the direct invitation link for ${targetEmail}:`;
     }
 
     return NextResponse.json({
       success: true,
-      message: `Invitation email sent successfully to ${targetEmail}`,
-      user: data.user,
+      message: inviteMessage,
+      action_link: actionLink,
+      user: inviteData?.user || null,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "An unexpected error occurred." }, { status: 500 });
