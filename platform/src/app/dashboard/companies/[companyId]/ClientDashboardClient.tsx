@@ -117,7 +117,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
   const [features, setFeatures] = useState<Feature[]>([]);
   const [sessions, setSessions] = useState<EvaluationSession[]>([]);
   const [rubrics, setRubrics] = useState<Rubric[]>([]);
-  const [profile, setProfile] = useState<{ id: string; full_name: string } | null>(null);
+  const [profile, setProfile] = useState<{ id: string; full_name: string; role?: string } | null>(null);
 
   // UI & Loading States
   const [isLoading, setIsLoading] = useState(true);
@@ -390,37 +390,90 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
     }
   });
 
+  const isClientViewer = profile?.role === "client_viewer";
+  const totalTurnsEvaluated = sessions.reduce((acc, s) => acc + (s.turns?.length || 0), 0);
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto py-2 font-sans">
-      {/* Back button */}
-      <button
-        onClick={() => router.push("/dashboard/companies")}
-        className="flex items-center gap-2 text-[#7A6C62] hover:text-[#2B231F] transition-colors text-xs font-semibold cursor-pointer py-1"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Clients
-      </button>
+      {/* Back button (Only for Admins/Evaluators) */}
+      {!isClientViewer && (
+        <button
+          onClick={() => router.push("/dashboard/companies")}
+          className="flex items-center gap-2 text-[#7A6C62] hover:text-[#2B231F] transition-colors text-xs font-semibold cursor-pointer py-1"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Clients
+        </button>
+      )}
 
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-[#2B231F] tracking-tight flex items-center gap-2 font-serif">
-            <Building className="h-7 w-7 text-[#E05D38]" />
-            {company?.name || "Client Workspace"}
-          </h1>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-3xl font-bold text-[#2B231F] tracking-tight flex items-center gap-2 font-serif">
+              <Building className="h-7 w-7 text-[#E05D38]" />
+              {company?.name || "Client Workspace"}
+            </h1>
+            {isClientViewer && (
+              <span className="px-2.5 py-1 bg-[#94BBE0]/25 border border-[#94BBE0]/60 text-[#1E3A5F] rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                Client View
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-[#7A6C62] font-semibold mt-1">
+            {isClientViewer 
+              ? "Evaluation overview, metrics, and detailed dialogue logs for your products"
+              : "Manage products, rubrics, and evaluation sessions for this client"}
+          </p>
         </div>
-        <button
-          onClick={() => setIsAddProductModalOpen(true)}
-          className="bg-[#E05D38] hover:bg-[#C54824] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-        >
-          <Plus className="h-4 w-4" />
-          Add New Product
-        </button>
+        
+        {!isClientViewer && (
+          <button
+            onClick={() => setIsAddProductModalOpen(true)}
+            className="bg-[#E05D38] hover:bg-[#C54824] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+          >
+            <Plus className="h-4 w-4" />
+            Add New Product
+          </button>
+        )}
+      </div>
+
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="glass-card rounded-xl border border-[#E3DBCF] p-4 flex items-center gap-3.5 shadow-sm bg-white">
+          <div className="h-10 w-10 rounded-xl bg-[#E05D38]/10 border border-[#E05D38]/20 flex items-center justify-center text-[#E05D38]">
+            <Cpu className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">Products & Features</div>
+            <div className="text-xl font-bold text-[#2B231F] font-serif">{features.length} Active</div>
+          </div>
+        </div>
+
+        <div className="glass-card rounded-xl border border-[#E3DBCF] p-4 flex items-center gap-3.5 shadow-sm bg-white">
+          <div className="h-10 w-10 rounded-xl bg-[#94BBE0]/25 border border-[#94BBE0]/60 flex items-center justify-center text-[#1E3A5F]">
+            <FileText className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">Dialogues Analyzed</div>
+            <div className="text-xl font-bold text-[#2B231F] font-serif">{totalTurnsEvaluated} Total</div>
+          </div>
+        </div>
+
+        <div className="glass-card rounded-xl border border-[#E3DBCF] p-4 flex items-center gap-3.5 shadow-sm bg-white">
+          <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-700">
+            <CheckCircle2 className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">Evaluation Sessions</div>
+            <div className="text-xl font-bold text-[#2B231F] font-serif">{sessions.length} Sessions</div>
+          </div>
+        </div>
       </div>
 
       {/* Products/Features Pills (Top Section) */}
       <div className="space-y-2">
-        <h2 className="text-[10px] uppercase font-bold tracking-widest text-[#7A6C62]">Products</h2>
+        <h2 className="text-[10px] uppercase font-bold tracking-widest text-[#7A6C62]">Products & Features</h2>
         {isLoading ? (
           <div className="flex gap-3 overflow-x-auto pb-2">
             {[1, 2, 3].map((n) => (
@@ -429,7 +482,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
           </div>
         ) : features.length === 0 ? (
           <div className="glass-card rounded-xl border border-[#E3DBCF] p-4 text-center text-[#7A6C62] text-xs">
-            No products added yet. Click "+ Add New Product" to start.
+            {isClientViewer ? "No products available for evaluation yet." : "No products added yet. Click \"+ Add New Product\" to start."}
           </div>
         ) : (
           <div className="flex flex-wrap gap-3">
@@ -444,18 +497,20 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                     {product.name}
                   </span>
                   <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleDeleteProduct(product.id, product.name);
-                      }}
-                      className="text-[#7A6C62] hover:text-[#E05D38] p-1 rounded hover:bg-[#E05D38]/10 transition-all cursor-pointer inline-flex items-center opacity-0 group-hover:opacity-100 focus:opacity-100"
-                      title={`Delete ${product.name}`}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
+                    {!isClientViewer && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeleteProduct(product.id, product.name);
+                        }}
+                        className="text-[#7A6C62] hover:text-[#E05D38] p-1 rounded hover:bg-[#E05D38]/10 transition-all cursor-pointer inline-flex items-center opacity-0 group-hover:opacity-100 focus:opacity-100"
+                        title={`Delete ${product.name}`}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    )}
                     <ChevronRight className="h-3.5 w-3.5 mt-0.5 text-[#7A6C62] group-hover:text-[#2B231F] transition-transform group-hover:translate-x-0.5" />
                   </div>
                 </div>
@@ -484,12 +539,14 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                   {company?.name || "Client"} Rubrics
                 </Link>
               </h2>
-              <Link
-                href={`/dashboard/rubrics?companyId=${companyId}&rubricId=new`}
-                className="px-3 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-[11px] font-bold cursor-pointer inline-flex items-center gap-1"
-              >
-                + New Rubric
-              </Link>
+              {!isClientViewer && (
+                <Link
+                  href={`/dashboard/rubrics?companyId=${companyId}&rubricId=new`}
+                  className="px-3 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-[11px] font-bold cursor-pointer inline-flex items-center gap-1"
+                >
+                  + New Rubric
+                </Link>
+              )}
             </div>
 
             {isLoading ? (
@@ -548,26 +605,29 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
                 <FileText className="h-4.5 w-4.5 text-[#E05D38]" />
                 Evaluation Sessions
               </h2>
-              <button
-                onClick={() => {
-                  if (features.length === 0) {
-                    alert("Please add a product first before starting an evaluation.");
-                    return;
-                  }
-                  if (activeRubricVersions.length === 0) {
-                    alert("Please configure an active rubric in the Rubrics Builder page first.");
-                    return;
-                  }
-                  setSelectedFeatureId(features[0].id);
-                  setSelectedRubricVersionId(activeRubricVersions[0].id);
-                  setNewSessionName(getFormattedDateName());
-                  setNewSessionDesc("");
-                  setIsStartEvalModalOpen(true);
-                }}
-                className="px-3 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-[11px] font-bold cursor-pointer"
-              >
-                + Start New Evaluation
-              </button>
+              {!isClientViewer && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (features.length === 0) {
+                      alert("Please add a product first before starting an evaluation.");
+                      return;
+                    }
+                    if (activeRubricVersions.length === 0) {
+                      alert("Please configure an active rubric in the Rubrics Builder page first.");
+                      return;
+                    }
+                    setSelectedFeatureId(features[0].id);
+                    setSelectedRubricVersionId(activeRubricVersions[0].id);
+                    setNewSessionName(getFormattedDateName());
+                    setNewSessionDesc("");
+                    setIsStartEvalModalOpen(true);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-[11px] font-bold cursor-pointer"
+                >
+                  + Start New Evaluation
+                </button>
+              )}
             </div>
 
             {isLoading ? (
