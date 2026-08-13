@@ -40,9 +40,15 @@ export async function POST(request: Request) {
 
     const targetEmail = email.trim().toLowerCase();
 
-    // 2. Initialize Supabase Client for invitation
+    // 2. Initialize Supabase Client for invitation using Service Role Key
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!serviceRoleKey) {
+      return NextResponse.json({
+        error: "SUPABASE_SERVICE_ROLE_KEY is missing. Please add your Supabase service_role key (from Supabase Dashboard -> Project Settings -> API) to platform/.env.local and Vercel."
+      }, { status: 400 });
+    }
 
     const adminClient = createSupabaseClient(supabaseUrl, serviceRoleKey, {
       auth: {
