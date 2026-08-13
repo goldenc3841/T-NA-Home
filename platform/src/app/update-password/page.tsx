@@ -22,9 +22,12 @@ export default function UpdatePasswordPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const handleSessionData = (session: any) => {
-      if (!session) return;
+      if (!session || !isMounted) return;
       setHasSession(true);
+      setCheckingAuth(false);
       if (session.user?.email) setUserEmail(session.user.email);
       
       const metaName = session.user?.user_metadata?.full_name || "";
@@ -38,8 +41,15 @@ export default function UpdatePasswordPage() {
       }
     };
 
-    const checkSession = async () => {
-      // 1. Check if URL contains auth code parameter
+    // 1. Subscribe to auth state changes FIRST (catches #access_token hash parsing)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        handleSessionData(session);
+      }
+    });
+
+    // 2. Check current session & handle URL parameters
+    const initAuth = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get("code");
       if (code) {
@@ -47,7 +57,6 @@ export default function UpdatePasswordPage() {
           const { data: codeData } = await supabase.auth.exchangeCodeForSession(code);
           if (codeData?.session) {
             handleSessionData(codeData.session);
-            setCheckingAuth(false);
             return;
           }
         } catch (e) {
@@ -55,26 +64,26 @@ export default function UpdatePasswordPage() {
         }
       }
 
-      // 2. Check active session
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         handleSessionData(session);
-      }
-      setCheckingAuth(false);
-    };
-
-    checkSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN" || event === "INITIAL_SESSION" || session) {
-        if (session) {
-          handleSessionData(session);
+      } else {
+        // If hash contains tokens, wait briefly for Supabase auth listener to process
+        const hasHashToken = typeof window !== "undefined" && (window.location.hash.includes("access_token") || window.location.hash.includes("type="));
+        if (!hasHashToken) {
+          if (isMounted) setCheckingAuth(false);
+        } else {
+          setTimeout(() => {
+            if (isMounted) setCheckingAuth(false);
+          }, 1500);
         }
       }
-      setCheckingAuth(false);
-    });
+    };
+
+    initAuth();
 
     return () => {
+      isMounted = false;
       authListener.subscription.unsubscribe();
     };
   }, [supabase]);
