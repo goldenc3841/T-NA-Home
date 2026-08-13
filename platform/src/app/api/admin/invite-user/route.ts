@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // 3. Send User Invitation via Email or Generate Direct Invite Link
+    // 3. Send User Invitation via Email and ALWAYS Generate Direct Invite Link
     const origin = new URL(request.url).origin;
     const inviteOptions = {
       redirectTo: `${origin}/auth/callback?next=/update-password`,
@@ -68,35 +68,37 @@ export async function POST(request: Request) {
       },
     };
 
-    let inviteMessage = `Invitation email sent successfully to ${targetEmail}`;
     let actionLink: string | null = null;
+    let inviteMessage = `Invitation created for ${targetEmail}`;
 
+    // 3a. Generate direct invitation link
+    const { data: linkData } = await adminClient.auth.admin.generateLink({
+      type: "invite",
+      email: targetEmail,
+      options: inviteOptions,
+    });
+
+    if (linkData?.properties?.action_link) {
+      actionLink = linkData.properties.action_link;
+    }
+
+    // 3b. Attempt sending automated invite email via Supabase SMTP
     const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
       targetEmail,
       inviteOptions
     );
 
     if (inviteError) {
-      // If email rate limit is hit or email sending fails, generate a direct invite link as fallback
-      const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-        type: "invite",
-        email: targetEmail,
-        options: inviteOptions,
-      });
-
-      if (linkError) {
-        return NextResponse.json({ error: inviteError.message || linkError.message }, { status: 400 });
-      }
-
-      actionLink = linkData.properties?.action_link || null;
-      inviteMessage = `Email rate limit reached on Supabase. Here is the direct invitation link for ${targetEmail}:`;
+      inviteMessage = `Direct invitation link generated for ${targetEmail}. (Email notice: ${inviteError.message})`;
+    } else {
+      inviteMessage = `Invitation email sent to ${targetEmail}. You can also copy the direct invitation link below:`;
     }
 
     return NextResponse.json({
       success: true,
       message: inviteMessage,
       action_link: actionLink,
-      user: inviteData?.user || null,
+      user: inviteData?.user || linkData?.user || null,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "An unexpected error occurred." }, { status: 500 });
