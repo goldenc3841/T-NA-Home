@@ -19,7 +19,8 @@ import {
   Settings,
   FileText,
   Trash2,
-  CheckCircle2
+  CheckCircle2,
+  Eye
 } from "lucide-react";
 
 interface Company {
@@ -390,14 +391,32 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
     }
   });
 
+  const [isPreviewAsClient, setIsPreviewAsClient] = useState(false);
   const isClientViewer = profile?.role === "client_viewer";
+  const isClientMode = isClientViewer || isPreviewAsClient;
   const clientFirstName = (profile?.full_name || "").trim().split(" ")[0] || "Client";
   const totalTurnsEvaluated = sessions.reduce((acc, s) => acc + (s.turns?.length || 0), 0);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto py-2 font-sans">
-      {/* Back button (Only for Admins/Evaluators) */}
-      {!isClientViewer && (
+      {/* Admin Preview Mode Alert Banner */}
+      {!isClientViewer && isPreviewAsClient && (
+        <div className="bg-[#E05D38]/10 border border-[#E05D38]/30 rounded-xl p-3.5 flex items-center justify-between text-xs text-[#2B231F]">
+          <div className="flex items-center gap-2 font-semibold">
+            <Eye className="h-4 w-4 text-[#E05D38]" />
+            <span><strong>Admin Preview Mode:</strong> You are viewing this workspace exactly as a client viewer for <strong>{company?.name}</strong> sees it.</span>
+          </div>
+          <button
+            onClick={() => setIsPreviewAsClient(false)}
+            className="px-3 py-1 bg-[#E05D38] text-white font-bold rounded-lg hover:bg-[#C54824] transition-colors text-[11px] cursor-pointer"
+          >
+            Exit Client Preview
+          </button>
+        </div>
+      )}
+
+      {/* Back button (Only for Admins/Evaluators when not previewing) */}
+      {!isClientMode && (
         <button
           onClick={() => router.push("/dashboard/companies")}
           className="flex items-center gap-2 text-[#7A6C62] hover:text-[#2B231F] transition-colors text-xs font-semibold cursor-pointer py-1"
@@ -413,30 +432,47 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
           <div className="flex items-center gap-2.5">
             <h1 className="text-3xl font-bold text-[#2B231F] tracking-tight flex items-center gap-2 font-serif">
               <Building className="h-7 w-7 text-[#E05D38]" />
-              {isClientViewer ? `Welcome, ${clientFirstName}` : (company?.name || "Client Workspace")}
+              {isClientMode ? `Welcome, ${clientFirstName}` : (company?.name || "Client Workspace")}
             </h1>
-            {isClientViewer && (
+            {isClientMode && (
               <span className="px-2.5 py-1 bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] rounded-lg text-[10px] font-bold uppercase tracking-wider">
                 {company?.name || "Client View"}
               </span>
             )}
           </div>
           <p className="text-xs text-[#7A6C62] font-semibold mt-1">
-            {isClientViewer 
+            {isClientMode 
               ? `Browse evaluation features and evaluation sessions for ${company?.name || "your company"}`
               : "Manage products, rubrics, and evaluation sessions for this client"}
           </p>
         </div>
         
-        {!isClientViewer && (
-          <button
-            onClick={() => setIsAddProductModalOpen(true)}
-            className="bg-[#E05D38] hover:bg-[#C54824] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            Add New Product
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {!isClientViewer && (
+            <button
+              type="button"
+              onClick={() => setIsPreviewAsClient(!isPreviewAsClient)}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm border ${
+                isPreviewAsClient 
+                  ? "bg-[#2B231F] text-white border-[#2B231F]"
+                  : "bg-white border-[#E3DBCF] text-[#7A6C62] hover:text-[#2B231F] hover:border-[#2B231F]"
+              }`}
+            >
+              <Eye className="h-4 w-4 text-[#E05D38]" />
+              {isPreviewAsClient ? "Viewing as Client" : "Preview Client View"}
+            </button>
+          )}
+
+          {!isClientMode && (
+            <button
+              onClick={() => setIsAddProductModalOpen(true)}
+              className="bg-[#E05D38] hover:bg-[#C54824] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Add New Product
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Products & Features Worked On By TNA Evaluators */}
@@ -504,7 +540,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
         )}
       </div>
       {/* Two Column Section (Admin Only: Rubrics & Session Logs) */}
-      {!isClientViewer && (
+      {!isClientMode && (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Left Column: Client Rubrics */}
           <div className="lg:col-span-2 space-y-4">
