@@ -87,7 +87,7 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
   const [companyName, setCompanyName] = useState("");
   const [sessions, setSessions] = useState<EvaluationSession[]>([]);
   const [rubrics, setRubrics] = useState<Rubric[]>([]);
-  const [profile, setProfile] = useState<{ id: string; full_name: string } | null>(null);
+  const [profile, setProfile] = useState<{ id: string; full_name: string; role?: string } | null>(null);
 
   // UI States
   const [isLoading, setIsLoading] = useState(true);
@@ -257,54 +257,61 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
     currentPage * ITEMS_PER_PAGE
   );
 
+  const isClientViewer = profile?.role === "client_viewer";
+
   return (
-    <div className="space-y-6 max-w-4xl mx-auto py-2 font-sans">
+    <div className="space-y-6 max-w-5xl mx-auto py-2 font-sans">
       {/* Clickable Breadcrumbs */}
       <nav className="flex items-center gap-1.5 text-xs font-semibold text-[#7A6C62]">
         <Link 
           href={`/dashboard/companies/${companyId}`}
           className="hover:text-[#E05D38] transition-colors uppercase tracking-wider text-[10px] text-[#2B231F] font-bold"
         >
-          {companyName}
+          {companyName || "Company"}
         </Link>
         <ChevronRight className="h-3 w-3 text-[#7A6C62]" />
         <span className="text-[#2B231F] font-bold border-b border-[#E05D38]/30 pb-0.5 uppercase tracking-wider text-[10px]">
-          {productName}
+          {productName || "Product Feature"}
         </span>
       </nav>
 
       {/* Header and Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#E3DBCF]">
         <div>
-          <h1 className="text-2xl font-bold text-[#E05D38] tracking-tight flex items-center gap-2 font-serif">
+          <h1 className="text-2xl font-bold text-[#2B231F] tracking-tight flex items-center gap-2 font-serif">
             <Layers className="h-6 w-6 text-[#E05D38]" />
-            Evaluation Sessions Log
+            {productName || "Product Feature"} — Evaluation Sessions
           </h1>
+          <p className="text-xs text-[#7A6C62] font-semibold mt-1">
+            Logged evaluation sessions and rubric field metrics for {productName}
+          </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <button
-            onClick={() => {
-              if (activeRubricVersions.length === 0) {
-                alert("Please configure an active rubric version in the Rubrics Builder first.");
-                return;
-              }
-              setSelectedRubricVersionId(activeRubricVersions[0].id);
-              setIsStartEvalModalOpen(true);
-            }}
-            className="px-3.5 py-2 rounded-lg bg-[#E05D38] hover:bg-[#C54824] text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            Start New Evaluation
-          </button>
-          <Link
-            href={`/dashboard/rubrics?companyId=${companyId}`}
-            className="px-3.5 py-2 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            Create New Rubric
-          </Link>
-        </div>
+        {!isClientViewer && (
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={() => {
+                if (activeRubricVersions.length === 0) {
+                  alert("Please configure an active rubric version in the Rubrics Builder first.");
+                  return;
+                }
+                setSelectedRubricVersionId(activeRubricVersions[0].id);
+                setIsStartEvalModalOpen(true);
+              }}
+              className="px-3.5 py-2 rounded-lg bg-[#E05D38] hover:bg-[#C54824] text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Start New Evaluation
+            </button>
+            <Link
+              href={`/dashboard/rubrics?companyId=${companyId}`}
+              className="px-3.5 py-2 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Create New Rubric
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Sessions Logs Table Section */}
@@ -313,58 +320,85 @@ export default function ProductPageClient({ companyId, productId }: ProductPageC
           Loading sessions log database...
         </div>
       ) : sessions.length === 0 ? (
-        <div className="glass-card rounded-xl border border-[#E3DBCF] p-8 text-center text-[#7A6C62] text-xs">
-          No evaluation sessions logged under this product feature. Click "Start New Evaluation" to begin.
+        <div className="glass-card rounded-xl border border-[#E3DBCF] p-8 text-center text-[#7A6C62] text-xs font-semibold">
+          No evaluation sessions logged under this product feature yet.
         </div>
       ) : (
-        <div className="glass-card rounded-xl border border-[#E3DBCF] overflow-hidden shadow-sm">
+        <div className="glass-card rounded-2xl border border-[#E3DBCF] overflow-hidden shadow-sm bg-white">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left text-xs">
               <thead>
                 <tr className="bg-[#FAF6EE] border-b border-[#E3DBCF] text-[#7A6C62] uppercase tracking-widest text-[9px] font-bold">
-                  <th className="p-4">ID</th>
                   <th className="p-4">Session Name</th>
-                  <th className="p-4">Rubric</th>
-                  <th className="p-4">Created</th>
+                  <th className="p-4">Created Date</th>
                   <th className="p-4">Last Activity</th>
+                  <th className="p-4">Rubric Name</th>
+                  <th className="p-4">Rubric Field Tags</th>
                   <th className="p-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E3DBCF] text-[#2B231F]">
-                {paginatedSessions.map((session) => (
-                  <tr 
-                    key={session.id} 
-                    className="hover:bg-[#FAF6EE] transition-colors cursor-pointer group"
-                    onClick={() => router.push(`/dashboard/companies/${companyId}/products/${productId}/sessions/${session.id}`)}
-                  >
-                    <td className="p-4 font-mono text-[10px] text-[#7A6C62]">
-                      {session.id.substring(0, 8)}
-                    </td>
-                    <td className="p-4 font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors">
-                      {session.name}
-                    </td>
-                    <td className="p-4 text-[#7A6C62]">
-                      {session.rubric_version?.rubric?.title}
-                    </td>
-                    <td className="p-4 text-[#7A6C62]">
-                      {formatExactDate(session.created_at)}
-                    </td>
-                    <td className="p-4 text-[#7A6C62]">
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5 text-[#7A6C62]" />
-                        {formatRelativeTime(session.updated_at)} ago
-                      </span>
-                    </td>
-                    <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
-                      <Link
-                        href={`/dashboard/companies/${companyId}/products/${productId}/sessions/${session.id}`}
-                        className="px-3.5 py-1.5 rounded-lg bg-[#94BBE0]/30 border border-[#94BBE0]/60 text-[#1E3A5F] hover:bg-[#94BBE0] hover:text-[#1E3A5F] transition-all text-[11px] font-extrabold cursor-pointer inline-block shadow-sm"
-                      >
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                {paginatedSessions.map((session) => {
+                  // Collect unique rubric field criterion names as tags
+                  const criterionMap = new Map<string, string>();
+                  session.turns?.forEach((t) => {
+                    t.scores?.forEach((sc) => {
+                      if (sc.criterion?.name) {
+                        criterionMap.set(sc.criterion.name, sc.criterion.name);
+                      }
+                    });
+                  });
+                  const criterionTags = Array.from(criterionMap.values());
+
+                  return (
+                    <tr 
+                      key={session.id} 
+                      className="hover:bg-[#FAF6EE] transition-colors cursor-pointer group"
+                      onClick={() => router.push(`/dashboard/companies/${companyId}/products/${productId}/sessions/${session.id}`)}
+                    >
+                      <td className="p-4 font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors">
+                        <span className="block text-sm">{session.name}</span>
+                        <span className="text-[10px] text-[#7A6C62] font-mono font-normal">ID: {session.id.substring(0, 8)}</span>
+                      </td>
+                      <td className="p-4 text-[#7A6C62] font-medium whitespace-nowrap">
+                        {formatExactDate(session.created_at)}
+                      </td>
+                      <td className="p-4 text-[#7A6C62]">
+                        <span className="flex items-center gap-1.5 font-medium whitespace-nowrap">
+                          <Clock className="h-3.5 w-3.5 text-[#E05D38]" />
+                          {formatRelativeTime(session.updated_at)} ago
+                        </span>
+                      </td>
+                      <td className="p-4 text-[#2B231F] font-semibold">
+                        {session.rubric_version?.rubric?.title || "Standard Rubric"}
+                      </td>
+                      <td className="p-4">
+                        {criterionTags.length === 0 ? (
+                          <span className="text-[10px] text-[#7A6C62] italic">No fields logged</span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1.5">
+                            {criterionTags.map((tag) => (
+                              <span 
+                                key={tag} 
+                                className="px-2 py-0.5 rounded-md bg-[#E05D38]/10 text-[#E05D38] border border-[#E05D38]/20 text-[10px] font-bold"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <Link
+                          href={`/dashboard/companies/${companyId}/products/${productId}/sessions/${session.id}`}
+                          className="px-3.5 py-1.5 rounded-lg bg-[#94BBE0]/25 border border-[#94BBE0]/60 text-[#1E3A5F] hover:bg-[#94BBE0] hover:text-[#1E3A5F] transition-all text-[11px] font-extrabold cursor-pointer inline-block shadow-sm"
+                        >
+                          View Session Log →
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

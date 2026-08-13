@@ -15,6 +15,8 @@ import {
   Sparkles
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+
 interface Company {
   id: string;
   name: string;
@@ -66,6 +68,7 @@ interface EvaluationSession {
 
 export default function DashboardPage() {
   const supabase = createClient();
+  const router = useRouter();
 
   const [profile, setProfile] = useState<{ full_name: string } | null>(null);
   const [sessions, setSessions] = useState<EvaluationSession[]>([]);
@@ -79,10 +82,13 @@ export default function DashboardPage() {
       if (user) {
         const { data } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("full_name, role, company_id")
           .eq("id", user.id)
           .single();
         setProfile(data);
+        if (data?.role === "client_viewer" && data?.company_id) {
+          router.push(`/dashboard/companies/${data.company_id}`);
+        }
       }
     } catch (err) {
       console.error("Error fetching profile:", err);

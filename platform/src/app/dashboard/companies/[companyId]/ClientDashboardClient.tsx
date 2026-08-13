@@ -391,6 +391,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
   });
 
   const isClientViewer = profile?.role === "client_viewer";
+  const clientFirstName = (profile?.full_name || "").trim().split(" ")[0] || "Client";
   const totalTurnsEvaluated = sessions.reduce((acc, s) => acc + (s.turns?.length || 0), 0);
 
   return (
@@ -407,22 +408,22 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
       )}
 
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center pb-2 border-b border-[#E3DBCF]">
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-3xl font-bold text-[#2B231F] tracking-tight flex items-center gap-2 font-serif">
               <Building className="h-7 w-7 text-[#E05D38]" />
-              {company?.name || "Client Workspace"}
+              {isClientViewer ? `Welcome, ${clientFirstName}` : (company?.name || "Client Workspace")}
             </h1>
             {isClientViewer && (
-              <span className="px-2.5 py-1 bg-[#94BBE0]/25 border border-[#94BBE0]/60 text-[#1E3A5F] rounded-lg text-[10px] font-bold uppercase tracking-wider">
-                Client View
+              <span className="px-2.5 py-1 bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                {company?.name || "Client View"}
               </span>
             )}
           </div>
           <p className="text-xs text-[#7A6C62] font-semibold mt-1">
             {isClientViewer 
-              ? "Evaluation overview, metrics, and detailed dialogue logs for your products"
+              ? `Browse evaluation features and evaluation sessions for ${company?.name || "your company"}`
               : "Manage products, rubrics, and evaluation sessions for this client"}
           </p>
         </div>
@@ -438,440 +439,231 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
         )}
       </div>
 
-      {/* Client Facing View: Feature Session Summary & Detailed Evaluations */}
-      {isClientViewer ? (
-        <div className="space-y-6">
-          {/* Feature Tabs Selector */}
-          <div className="space-y-2">
-            <h2 className="text-[10px] uppercase font-bold tracking-widest text-[#7A6C62]">
-              Select Product Feature
-            </h2>
-            {isLoading ? (
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {[1, 2, 3].map((n) => (
-                  <div key={n} className="h-10 w-36 bg-[#E3DBCF]/40 rounded-xl animate-pulse" />
-                ))}
-              </div>
-            ) : features.length === 0 ? (
-              <div className="glass-card rounded-xl border border-[#E3DBCF] p-4 text-center text-[#7A6C62] text-xs">
-                No evaluation features available for your account yet.
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-[#E3DBCF]">
-                {features.map((feat) => {
-                  const activeId = selectedProductId || features[0]?.id;
-                  const isActive = activeId === feat.id;
-                  return (
-                    <button
-                      key={feat.id}
-                      type="button"
-                      onClick={() => setSelectedProductId(feat.id)}
-                      className={`px-4 py-2.5 rounded-t-xl font-bold text-xs transition-all cursor-pointer border-t border-x flex items-center gap-2 ${
-                        isActive
-                          ? "bg-white border-[#E3DBCF] text-[#E05D38] shadow-sm -mb-[1px] border-b-white"
-                          : "bg-[#FAF6EE] border-transparent text-[#7A6C62] hover:text-[#2B231F] hover:bg-white/60"
-                      }`}
-                    >
-                      <Cpu className="h-3.5 w-3.5" />
-                      <span>{feat.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+      {/* Products & Features Worked On By TNA Evaluators */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs uppercase font-bold tracking-widest text-[#7A6C62] flex items-center gap-2">
+            <Cpu className="h-4 w-4 text-[#E05D38]" />
+            Products & Features Worked On ({features.length})
+          </h2>
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="glass-card h-28 rounded-xl border border-[#E3DBCF] animate-pulse" />
+            ))}
           </div>
+        ) : features.length === 0 ? (
+          <div className="glass-card rounded-2xl border border-[#E3DBCF] p-8 text-center text-[#7A6C62] text-xs font-semibold bg-white">
+            No products or features have been registered for evaluation yet.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {features.map((product) => {
+              const productSessions = sessions.filter(s => s.feature?.id === product.id);
+              const lastActivityDate = productSessions.reduce((latest, s) => (s.updated_at > latest ? s.updated_at : latest), "");
 
-          {/* Selected Feature Content */}
-          {(() => {
-            const activeProduct = features.find(f => f.id === (selectedProductId || features[0]?.id)) || features[0];
-            const activeSessions = sessions.filter(s => s.feature?.id === activeProduct?.id);
-            const activeTurns = activeSessions.flatMap(s => s.turns || []);
-
-            // Rubric Criterion Pass/Fail Summary Stats
-            const criteriaMap = new Map<string, { id: string; name: string; passCount: number; totalCount: number }>();
-            activeTurns.forEach(turn => {
-              turn.scores?.forEach(score => {
-                if (!score.criterion) return;
-                const cid = score.criterion.id;
-                if (!criteriaMap.has(cid)) {
-                  criteriaMap.set(cid, {
-                    id: cid,
-                    name: score.criterion.name,
-                    passCount: 0,
-                    totalCount: 0,
-                  });
-                }
-                const stat = criteriaMap.get(cid)!;
-                stat.totalCount++;
-                const val = (score.value || "").toLowerCase();
-                if (val === "pass" || val === "yes" || val === "1" || val === "5" || val === "true") {
-                  stat.passCount++;
-                }
-              });
-            });
-            const criteriaStats = Array.from(criteriaMap.values());
-
-            return (
-              <div className="space-y-6">
-                {/* Feature Overview & Criterion Summary Card */}
-                <div className="glass-card rounded-2xl border border-[#E3DBCF] p-6 shadow-sm bg-white space-y-4">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#E3DBCF]">
-                    <div>
-                      <h2 className="text-xl font-bold text-[#2B231F] font-serif flex items-center gap-2">
-                        <Layers className="h-5 w-5 text-[#E05D38]" />
-                        {activeProduct?.name || "Feature Overview"}
-                      </h2>
-                      <p className="text-xs text-[#7A6C62] font-semibold mt-1">
-                        {activeProduct?.description || "Evaluation Summary Dashboard"}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs font-semibold text-[#7A6C62]">
-                      <div className="px-3 py-1.5 rounded-lg bg-[#FAF6EE] border border-[#E3DBCF]">
-                        <span className="text-[10px] uppercase font-bold text-[#7A6C62] block">Total Dialogues</span>
-                        <span className="text-sm font-bold text-[#2B231F]">{activeTurns.length} Evaluated</span>
+              return (
+                <Link
+                  key={product.id}
+                  href={`/dashboard/companies/${companyId}/products/${product.id}`}
+                  className="glass-card rounded-2xl border border-[#E3DBCF] p-5 text-left cursor-pointer transition-all duration-300 flex flex-col justify-between hover:border-[#E05D38] hover:bg-white group shadow-sm bg-white/60 space-y-3"
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-9 w-9 rounded-xl bg-[#E05D38]/10 border border-[#E05D38]/20 flex items-center justify-center text-[#E05D38] shrink-0">
+                        <Layers className="h-4.5 w-4.5" />
                       </div>
-                      <div className="px-3 py-1.5 rounded-lg bg-[#FAF6EE] border border-[#E3DBCF]">
-                        <span className="text-[10px] uppercase font-bold text-[#7A6C62] block">Sessions Run</span>
-                        <span className="text-sm font-bold text-[#2B231F]">{activeSessions.length} Sessions</span>
+                      <div>
+                        <span className="font-bold text-sm text-[#2B231F] group-hover:text-[#E05D38] transition-colors block">
+                          {product.name}
+                        </span>
+                        <span className="text-[10px] text-[#7A6C62] font-semibold">
+                          {productSessions.length} Evaluation Session{productSessions.length !== 1 ? "s" : ""}
+                        </span>
                       </div>
                     </div>
+                    <ChevronRight className="h-4 w-4 text-[#7A6C62] group-hover:text-[#E05D38] transition-transform group-hover:translate-x-1 shrink-0" />
                   </div>
 
-                  {/* Rubric Criteria Metrics Breakdown */}
-                  {criteriaStats.length > 0 && (
-                    <div className="space-y-3 pt-2">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#7A6C62]">
-                        Feature Rubric Criteria Performance
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {criteriaStats.map(stat => {
-                          const passPercentage = stat.totalCount > 0 ? Math.round((stat.passCount / stat.totalCount) * 100) : 0;
-                          return (
-                            <div key={stat.id} className="p-3.5 rounded-xl bg-[#FAF6EE] border border-[#E3DBCF] space-y-2">
-                              <div className="flex justify-between items-center text-xs">
-                                <span className="font-bold text-[#2B231F] truncate max-w-[180px]" title={stat.name}>{stat.name}</span>
-                                <span className="font-mono font-bold text-[#E05D38]">{passPercentage}% Pass</span>
-                              </div>
-                              <div className="w-full bg-[#E3DBCF] h-2 rounded-full overflow-hidden">
-                                <div 
-                                  className="bg-[#E05D38] h-full rounded-full transition-all duration-500" 
-                                  style={{ width: `${passPercentage}%` }}
-                                />
-                              </div>
-                              <div className="text-[10px] text-[#7A6C62] font-semibold text-right">
-                                {stat.passCount} of {stat.totalCount} evaluations passed
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  <p className="text-xs text-[#7A6C62] line-clamp-2 leading-relaxed font-medium">
+                    {product.description || "No description provided."}
+                  </p>
 
-                {/* Detailed Evaluations Table for Feature */}
-                <div className="glass-card rounded-2xl border border-[#E3DBCF] p-6 shadow-sm bg-white space-y-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-[#E3DBCF]">
-                    <h3 className="text-sm font-bold text-[#2B231F] uppercase tracking-wider flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-[#E05D38]" />
-                      Detailed Evaluations & Dialogue Logs
-                    </h3>
-                    <span className="text-xs text-[#7A6C62] font-semibold">
-                      Showing {activeTurns.length} dialogue entries
+                  <div className="pt-2 border-t border-[#E3DBCF]/60 flex items-center justify-between text-[11px] text-[#7A6C62]">
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5 text-[#E05D38]" />
+                      {lastActivityDate ? `Last activity: ${formatRelativeTime(lastActivityDate)} ago` : "No evaluation activity yet"}
                     </span>
                   </div>
-
-                  {activeTurns.length === 0 ? (
-                    <div className="py-12 text-center text-xs text-[#7A6C62] font-semibold">
-                      No evaluation dialogue entries recorded for this feature yet.
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse text-left text-xs">
-                        <thead>
-                          <tr className="bg-[#FAF6EE] border-b border-[#E3DBCF] text-[#7A6C62] uppercase tracking-widest text-[9px] font-bold">
-                            <th className="p-3">Session</th>
-                            <th className="p-3">Date (PST)</th>
-                            <th className="p-3 max-w-[220px]">Prompt Input</th>
-                            <th className="p-3 max-w-[260px]">Response Output</th>
-                            <th className="p-3">Evaluation Scores</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#E3DBCF] text-[#2B231F]">
-                          {activeSessions.flatMap(sess => (sess.turns || []).map(turn => {
-                            const pstDate = new Date(turn.created_at).toLocaleString("en-US", {
-                              timeZone: "America/Los_Angeles",
-                              month: "short",
-                              day: "numeric",
-                              hour: "numeric",
-                              minute: "2-digit",
-                              hour12: true,
-                            });
-                            const hasPromptImage = turn.prompt?.includes("![Image]") || turn.prompt?.includes("<img");
-
-                            return (
-                              <tr key={turn.id} className="hover:bg-[#FAF6EE] transition-colors">
-                                <td className="p-3 font-bold text-[#2B231F] max-w-[120px] truncate" title={sess.name}>
-                                  {sess.name}
-                                </td>
-                                <td className="p-3 text-[11px] text-[#7A6C62] font-medium whitespace-nowrap">
-                                  {pstDate} PST
-                                </td>
-                                <td className="p-3 max-w-[220px] truncate text-[#2B231F]">
-                                  {hasPromptImage ? (
-                                    <span className="italic text-[#E05D38] font-medium">Image Prompt</span>
-                                  ) : (
-                                    turn.prompt
-                                  )}
-                                </td>
-                                <td className="p-3 max-w-[260px] truncate text-[#7A6C62]">
-                                  {turn.response}
-                                </td>
-                                <td className="p-3">
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {turn.scores?.map(sc => {
-                                      const isPass = sc.value === "Pass" || sc.value === "Yes" || sc.value === "1";
-                                      return (
-                                        <span 
-                                          key={sc.id} 
-                                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                            isPass 
-                                              ? "bg-emerald-500/10 text-emerald-800 border border-emerald-500/30" 
-                                              : "bg-rose-500/10 text-rose-800 border border-rose-500/30"
-                                          }`}
-                                        >
-                                          {sc.criterion?.name || "Criterion"}: {sc.value}
-                                        </span>
-                                      );
-                                    })}
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          }))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      ) : (
-        /* Admin View: Products, Rubrics, and Session Logs */
-        <div className="space-y-6">
-          {/* Products/Features Section */}
-          <div className="space-y-2">
-            <h2 className="text-[10px] uppercase font-bold tracking-widest text-[#7A6C62]">Products & Features</h2>
-            {isLoading ? (
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {[1, 2, 3].map((n) => (
-                  <div key={n} className="glass-card h-14 w-48 rounded-xl border border-[#E3DBCF] animate-pulse" />
-                ))}
-              </div>
-            ) : features.length === 0 ? (
-              <div className="glass-card rounded-xl border border-[#E3DBCF] p-4 text-center text-[#7A6C62] text-xs">
-                No products added yet. Click "+ Add New Product" to start.
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-3">
-                {features.map((product) => (
-                  <Link
-                    key={product.id}
-                    href={`/dashboard/companies/${companyId}/products/${product.id}`}
-                    className="glass-card rounded-xl border border-[#E3DBCF] p-4 text-left cursor-pointer transition-all duration-300 w-52 shrink-0 flex flex-col justify-between hover:border-[#E05D38] hover:bg-white group shadow-sm"
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      {/* Two Column Section (Admin Only: Rubrics & Session Logs) */}
+      {!isClientViewer && (
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Left Column: Client Rubrics */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="glass-card rounded-xl border border-[#E3DBCF] p-5 shadow-sm">
+              <div className="flex justify-between items-center pb-3 border-b border-[#E3DBCF] mb-4">
+                <h2 className="text-sm font-bold text-[#2B231F] uppercase tracking-widest flex items-center gap-2 truncate">
+                  <Settings className="h-4.5 w-4.5 text-[#E05D38]" />
+                  <Link 
+                    href={`/dashboard/rubrics?companyId=${companyId}`}
+                    className="hover:text-[#E05D38] hover:underline transition-colors"
                   >
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="font-bold text-xs text-[#2B231F] group-hover:text-[#E05D38] transition-colors truncate">
-                        {product.name}
-                      </span>
-                      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDeleteProduct(product.id, product.name);
-                          }}
-                          className="text-[#7A6C62] hover:text-[#E05D38] p-1 rounded hover:bg-[#E05D38]/10 transition-all cursor-pointer inline-flex items-center opacity-0 group-hover:opacity-100 focus:opacity-100"
-                          title={`Delete ${product.name}`}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                        <ChevronRight className="h-3.5 w-3.5 mt-0.5 text-[#7A6C62] group-hover:text-[#2B231F] transition-transform group-hover:translate-x-0.5" />
-                      </div>
-                    </div>
-                    <p className="text-[10px] text-[#7A6C62] line-clamp-1 mt-1.5 leading-normal">
-                      {product.description || "No description provided."}
-                    </p>
+                    {company?.name || "Client"} Rubrics
                   </Link>
-                ))}
+                </h2>
+                <Link
+                  href={`/dashboard/rubrics?companyId=${companyId}&rubricId=new`}
+                  className="px-3 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-[11px] font-bold cursor-pointer inline-flex items-center gap-1"
+                >
+                  + New Rubric
+                </Link>
               </div>
-            )}
+
+              {isLoading ? (
+                <div className="text-[#7A6C62] text-xs py-8 text-center animate-pulse">Loading rubrics...</div>
+              ) : rubrics.length === 0 ? (
+                <div className="text-[#7A6C62] text-xs py-8 text-center">No rubrics registered for this company.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-left text-xs">
+                    <thead>
+                      <tr className="bg-[#FAF6EE] border-b border-[#E3DBCF] text-[#7A6C62] uppercase tracking-widest text-[9px] font-bold">
+                        <th className="p-3">ID</th>
+                        <th className="p-3">Name</th>
+                        <th className="p-3 text-right">Last Activity</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E3DBCF]">
+                      {rubrics.map((rubric) => (
+                        <tr 
+                          key={rubric.id} 
+                          onClick={() => router.push(`/dashboard/rubrics?companyId=${companyId}&rubricId=${rubric.id}`)}
+                          className="hover:bg-[#FAF6EE] active:bg-[#F2EBDC] transition-colors cursor-pointer group text-[#2B231F]"
+                        >
+                          <td className="p-3 font-mono text-[9px] text-[#7A6C62]">
+                            {rubric.id.substring(0, 8)}
+                          </td>
+                          <td className="p-3 font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors truncate max-w-[120px]" title={rubric.title}>
+                            {rubric.title}
+                          </td>
+                          <td className="p-3 text-right text-[#7A6C62]">
+                            {rubricLastActivity[rubric.id] ? (
+                              <span className="inline-flex items-center gap-1.5 justify-end">
+                                <Clock className="h-3.5 w-3.5 text-[#7A6C62]" />
+                                {formatRelativeTime(rubricLastActivity[rubric.id])} ago
+                              </span>
+                            ) : (
+                              <span className="text-[#7A6C62] italic text-[10px]">No activity</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Two Column Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            {/* Left Column: Client Rubrics */}
-            <div className="lg:col-span-2 space-y-4">
-              <div className="glass-card rounded-xl border border-[#E3DBCF] p-5 shadow-sm">
-                <div className="flex justify-between items-center pb-3 border-b border-[#E3DBCF] mb-4">
-                  <h2 className="text-sm font-bold text-[#2B231F] uppercase tracking-widest flex items-center gap-2 truncate">
-                    <Settings className="h-4.5 w-4.5 text-[#E05D38]" />
-                    <Link 
-                      href={`/dashboard/rubrics?companyId=${companyId}`}
-                      className="hover:text-[#E05D38] hover:underline transition-colors"
-                    >
-                      {company?.name || "Client"} Rubrics
-                    </Link>
-                  </h2>
-                  <Link
-                    href={`/dashboard/rubrics?companyId=${companyId}&rubricId=new`}
-                    className="px-3 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-[11px] font-bold cursor-pointer inline-flex items-center gap-1"
-                  >
-                    + New Rubric
-                  </Link>
-                </div>
+          {/* Right Column: Evaluation Sessions */}
+          <div className="lg:col-span-3 space-y-4">
+            <div className="glass-card rounded-xl border border-[#E3DBCF] p-5 shadow-sm">
+              <div className="flex justify-between items-center pb-3 border-b border-[#E3DBCF] mb-4">
+                <h2 className="text-sm font-bold text-[#2B231F] uppercase tracking-widest flex items-center gap-2">
+                  <FileText className="h-4.5 w-4.5 text-[#E05D38]" />
+                  Evaluation Sessions
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (features.length === 0) {
+                      alert("Please add a product first before starting an evaluation.");
+                      return;
+                    }
+                    if (activeRubricVersions.length === 0) {
+                      alert("Please configure an active rubric in the Rubrics Builder page first.");
+                      return;
+                    }
+                    setSelectedFeatureId(features[0].id);
+                    setSelectedRubricVersionId(activeRubricVersions[0].id);
+                    setNewSessionName(getFormattedDateName());
+                    setNewSessionDesc("");
+                    setIsStartEvalModalOpen(true);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-[11px] font-bold cursor-pointer"
+                >
+                  + Start New Evaluation
+                </button>
+              </div>
 
-                {isLoading ? (
-                  <div className="text-[#7A6C62] text-xs py-8 text-center animate-pulse">Loading rubrics...</div>
-                ) : rubrics.length === 0 ? (
-                  <div className="text-[#7A6C62] text-xs py-8 text-center">No rubrics registered for this company.</div>
-                ) : (
+              {isLoading ? (
+                <div className="text-[#7A6C62] text-xs py-8 text-center animate-pulse">Loading evaluations...</div>
+              ) : filteredSessions.length === 0 ? (
+                <div className="text-[#7A6C62] text-xs py-8 text-center">
+                  {selectedProductId ? "No evaluations for this product." : "No evaluation sessions recorded yet."}
+                </div>
+              ) : (
+                <div className="space-y-4">
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-left text-xs">
                       <thead>
                         <tr className="bg-[#FAF6EE] border-b border-[#E3DBCF] text-[#7A6C62] uppercase tracking-widest text-[9px] font-bold">
                           <th className="p-3">ID</th>
-                          <th className="p-3">Name</th>
-                          <th className="p-3 text-right">Last Activity</th>
+                          <th className="p-3">Session Name</th>
+                          <th className="p-3">Product</th>
+                          <th className="p-3">Rubric</th>
+                          <th className="p-3">Created</th>
+                          <th className="p-3">Last Activity</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E3DBCF]">
-                        {rubrics.map((rubric) => (
+                        {paginatedSessions.map((session) => (
                           <tr 
-                            key={rubric.id} 
-                            onClick={() => router.push(`/dashboard/rubrics?companyId=${companyId}&rubricId=${rubric.id}`)}
-                            className="hover:bg-[#FAF6EE] active:bg-[#F2EBDC] transition-colors cursor-pointer group text-[#2B231F]"
+                            key={session.id} 
+                            onClick={() => router.push(`/dashboard/companies/${companyId}/products/${session.feature?.id}/sessions/${session.id}`)}
+                            className="hover:bg-[#FAF6EE] transition-colors text-[#2B231F] cursor-pointer group"
                           >
-                            <td className="p-3 font-mono text-[9px] text-[#7A6C62]">
-                              {rubric.id.substring(0, 8)}
+                            <td className="p-3 font-mono text-[10px] text-[#7A6C62]">
+                              {session.id.substring(0, 8)}
                             </td>
-                            <td className="p-3 font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors truncate max-w-[120px]" title={rubric.title}>
-                              {rubric.title}
+                            <td className="p-3 font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors truncate max-w-[130px]" title={session.name}>
+                              {session.name}
                             </td>
-                            <td className="p-3 text-right text-[#7A6C62]">
-                              {rubricLastActivity[rubric.id] ? (
-                                <span className="inline-flex items-center gap-1.5 justify-end">
-                                  <Clock className="h-3.5 w-3.5 text-[#7A6C62]" />
-                                  {formatRelativeTime(rubricLastActivity[rubric.id])} ago
-                                </span>
-                              ) : (
-                                <span className="text-[#7A6C62] italic text-[10px]">No activity</span>
-                              )}
+                            <td className="p-3">
+                              <span 
+                                className="font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors truncate max-w-[120px] block"
+                                title={session.feature?.name}
+                              >
+                                {session.feature?.name}
+                              </span>
+                            </td>
+                            <td className="p-3 text-[#7A6C62] truncate max-w-[120px]" title={session.rubric_version?.rubric?.title}>
+                              {session.rubric_version?.rubric?.title}
+                            </td>
+                            <td className="p-3 text-[#7A6C62] text-[10px]">
+                              {new Date(session.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </td>
+                            <td className="p-3 text-[#7A6C62]">
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3.5 w-3.5 text-[#7A6C62]" />
+                                {formatRelativeTime(session.updated_at)} ago
+                              </span>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Right Column: Evaluation Sessions */}
-            <div className="lg:col-span-3 space-y-4">
-              <div className="glass-card rounded-xl border border-[#E3DBCF] p-5 shadow-sm">
-                <div className="flex justify-between items-center pb-3 border-b border-[#E3DBCF] mb-4">
-                  <h2 className="text-sm font-bold text-[#2B231F] uppercase tracking-widest flex items-center gap-2">
-                    <FileText className="h-4.5 w-4.5 text-[#E05D38]" />
-                    Evaluation Sessions
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (features.length === 0) {
-                        alert("Please add a product first before starting an evaluation.");
-                        return;
-                      }
-                      if (activeRubricVersions.length === 0) {
-                        alert("Please configure an active rubric in the Rubrics Builder page first.");
-                        return;
-                      }
-                      setSelectedFeatureId(features[0].id);
-                      setSelectedRubricVersionId(activeRubricVersions[0].id);
-                      setNewSessionName(getFormattedDateName());
-                      setNewSessionDesc("");
-                      setIsStartEvalModalOpen(true);
-                    }}
-                    className="px-3 py-1.5 rounded-lg bg-[#E05D38]/10 border border-[#E05D38]/20 text-[#E05D38] hover:bg-[#E05D38] hover:text-white transition-all text-[11px] font-bold cursor-pointer"
-                  >
-                    + Start New Evaluation
-                  </button>
                 </div>
-
-                {isLoading ? (
-                  <div className="text-[#7A6C62] text-xs py-8 text-center animate-pulse">Loading evaluations...</div>
-                ) : filteredSessions.length === 0 ? (
-                  <div className="text-[#7A6C62] text-xs py-8 text-center">
-                    {selectedProductId ? "No evaluations for this product." : "No evaluation sessions recorded yet."}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse text-left text-xs">
-                        <thead>
-                          <tr className="bg-[#FAF6EE] border-b border-[#E3DBCF] text-[#7A6C62] uppercase tracking-widest text-[9px] font-bold">
-                            <th className="p-3">ID</th>
-                            <th className="p-3">Session Name</th>
-                            <th className="p-3">Product</th>
-                            <th className="p-3">Rubric</th>
-                            <th className="p-3">Created</th>
-                            <th className="p-3">Last Activity</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#E3DBCF]">
-                          {paginatedSessions.map((session) => (
-                            <tr 
-                              key={session.id} 
-                              onClick={() => router.push(`/dashboard/companies/${companyId}/products/${session.feature?.id}/sessions/${session.id}`)}
-                              className="hover:bg-[#FAF6EE] transition-colors text-[#2B231F] cursor-pointer group"
-                            >
-                              <td className="p-3 font-mono text-[10px] text-[#7A6C62]">
-                                {session.id.substring(0, 8)}
-                              </td>
-                              <td className="p-3 font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors truncate max-w-[130px]" title={session.name}>
-                                {session.name}
-                              </td>
-                              <td className="p-3">
-                                <span 
-                                  className="font-bold text-[#2B231F] group-hover:text-[#E05D38] transition-colors truncate max-w-[120px] block"
-                                  title={session.feature?.name}
-                                >
-                                  {session.feature?.name}
-                                </span>
-                              </td>
-                              <td className="p-3 text-[#7A6C62] truncate max-w-[120px]" title={session.rubric_version?.rubric?.title}>
-                                {session.rubric_version?.rubric?.title}
-                              </td>
-                              <td className="p-3 text-[#7A6C62] text-[10px]">
-                                {new Date(session.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                              </td>
-                              <td className="p-3 text-[#7A6C62]">
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3.5 w-3.5 text-[#7A6C62]" />
-                                  {formatRelativeTime(session.updated_at)} ago
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </div>
