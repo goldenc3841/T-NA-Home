@@ -661,39 +661,6 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
       ) : (
         /* Admin View: Products, Rubrics, and Session Logs */
         <div className="space-y-6">
-          {/* Summary KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="glass-card rounded-xl border border-[#E3DBCF] p-4 flex items-center gap-3.5 shadow-sm bg-white">
-              <div className="h-10 w-10 rounded-xl bg-[#E05D38]/10 border border-[#E05D38]/20 flex items-center justify-center text-[#E05D38]">
-                <Cpu className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">Products & Features</div>
-                <div className="text-xl font-bold text-[#2B231F] font-serif">{features.length} Active</div>
-              </div>
-            </div>
-
-            <div className="glass-card rounded-xl border border-[#E3DBCF] p-4 flex items-center gap-3.5 shadow-sm bg-white">
-              <div className="h-10 w-10 rounded-xl bg-[#94BBE0]/25 border border-[#94BBE0]/60 flex items-center justify-center text-[#1E3A5F]">
-                <FileText className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">Dialogues Analyzed</div>
-                <div className="text-xl font-bold text-[#2B231F] font-serif">{totalTurnsEvaluated} Total</div>
-              </div>
-            </div>
-
-            <div className="glass-card rounded-xl border border-[#E3DBCF] p-4 flex items-center gap-3.5 shadow-sm bg-white">
-              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-700">
-                <CheckCircle2 className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">Evaluation Sessions</div>
-                <div className="text-xl font-bold text-[#2B231F] font-serif">{sessions.length} Sessions</div>
-              </div>
-            </div>
-          </div>
-
           {/* Products/Features Section */}
           <div className="space-y-2">
             <h2 className="text-[10px] uppercase font-bold tracking-widest text-[#7A6C62]">Products & Features</h2>
