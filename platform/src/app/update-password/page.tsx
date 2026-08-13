@@ -22,15 +22,26 @@ export default function UpdatePasswordPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Listen for password recovery or active session state
+    const handleSessionData = (session: any) => {
+      if (!session) return;
+      setHasSession(true);
+      if (session.user?.email) setUserEmail(session.user.email);
+      
+      const metaName = session.user?.user_metadata?.full_name || "";
+      if (metaName && !metaName.includes("@")) {
+        const nameParts = metaName.trim().split(" ");
+        if (nameParts[0]) setFirstName(nameParts[0]);
+        if (nameParts.length > 1) setLastName(nameParts.slice(1).join(" "));
+      } else {
+        setFirstName("");
+        setLastName("");
+      }
+    };
+
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        setHasSession(true);
-        if (session.user?.email) setUserEmail(session.user.email);
-        const nameParts = (session.user?.user_metadata?.full_name || "").split(" ");
-        if (nameParts[0]) setFirstName(nameParts[0]);
-        if (nameParts.length > 1) setLastName(nameParts.slice(1).join(" "));
+        handleSessionData(session);
       }
       setCheckingAuth(false);
     };
@@ -39,11 +50,7 @@ export default function UpdatePasswordPage() {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "PASSWORD_RECOVERY" || session) {
-        setHasSession(true);
-        if (session?.user?.email) setUserEmail(session.user.email);
-        const nameParts = (session?.user?.user_metadata?.full_name || "").split(" ");
-        if (nameParts[0]) setFirstName(nameParts[0]);
-        if (nameParts.length > 1) setLastName(nameParts.slice(1).join(" "));
+        handleSessionData(session);
       }
       setCheckingAuth(false);
     });
@@ -140,6 +147,13 @@ export default function UpdatePasswordPage() {
           <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 text-xs font-semibold flex items-start gap-3">
             <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-emerald-700" />
             <span>{successMsg}</span>
+          </div>
+        )}
+
+        {/* Informational tip if testing while logged in as Admin */}
+        {["goldenc5310@gmail.com", "pisurajc@gmail.com"].includes((userEmail || "").toLowerCase()) && (
+          <div className="mb-6 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 text-xs font-semibold">
+            💡 <strong>Testing an invite link?</strong> Your browser is currently logged into your Admin account (<span className="font-mono">{userEmail}</span>). To test account creation as the new invited user, copy the link into an <strong>Incognito / Private Window</strong> or another browser!
           </div>
         )}
 
