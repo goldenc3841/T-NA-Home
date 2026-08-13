@@ -92,6 +92,8 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
   const [turns, setTurns] = useState<Turn[]>([]);
 
   // UI States
+  const [profileRole, setProfileRole] = useState<string>("evaluator");
+  const isClientViewer = profileRole === "client_viewer";
   const [isLoading, setIsLoading] = useState(true);
   const [expandedTurns, setExpandedTurns] = useState<Record<string, boolean>>({});
 
@@ -102,6 +104,12 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
   async function fetchSessionData() {
     setIsLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+        if (prof?.role) setProfileRole(prof.role);
+      }
+
       // 1. Fetch current session & nested feature details
       const { data: sessionData, error: sessionErr } = await supabase
         .from("sessions")
@@ -851,14 +859,16 @@ export default function SessionPageClient({ companyId, productId, sessionId }: S
                           })}
 
                           <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteTurn(turn.id)}
-                              className="text-[#7A6C62] hover:text-[#E05D38] p-1.5 rounded hover:bg-[#E05D38]/10 transition-all cursor-pointer inline-flex items-center"
-                              title="Delete Evaluation Row"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
+                            {!isClientViewer && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteTurn(turn.id)}
+                                className="text-[#7A6C62] hover:text-[#E05D38] p-1.5 rounded hover:bg-[#E05D38]/10 transition-all cursor-pointer inline-flex items-center"
+                                title="Delete Evaluation Row"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
                           </td>
                         </tr>
 

@@ -27,8 +27,15 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const email = body.email;
+    const role = body.role || "evaluator";
+    const company_id = body.company_id || null;
+
     if (!email || !email.trim()) {
       return NextResponse.json({ error: "Email address is required." }, { status: 400 });
+    }
+
+    if (role === "client_viewer" && !company_id) {
+      return NextResponse.json({ error: "Please select a client company for this client user." }, { status: 400 });
     }
 
     const targetEmail = email.trim().toLowerCase();
@@ -48,6 +55,11 @@ export async function POST(request: Request) {
     const origin = new URL(request.url).origin;
     const { data, error } = await adminClient.auth.admin.inviteUserByEmail(targetEmail, {
       redirectTo: `${origin}/auth/callback?next=/update-password`,
+      data: {
+        full_name: targetEmail,
+        role: role,
+        company_id: company_id,
+      },
     });
 
     if (error) {

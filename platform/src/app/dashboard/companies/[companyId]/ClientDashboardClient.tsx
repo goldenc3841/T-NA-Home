@@ -155,7 +155,7 @@ export default function ClientDashboardClient({ companyId }: ClientDashboardProp
       if (user) {
         const { data } = await supabase
           .from("profiles")
-          .select("id, full_name")
+          .select("id, full_name, role")
           .eq("id", user.id)
           .single();
         setProfile(data);

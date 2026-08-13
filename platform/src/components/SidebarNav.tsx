@@ -28,9 +28,38 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"evaluator" | "client_viewer">("evaluator");
+  const [selectedCompanyId, setSelectedCompanyId] = useState("");
+  const [companiesList, setCompaniesList] = useState<{ id: string; name: string }[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const [inviteError, setInviteError] = useState("");
   const [inviteSuccess, setInviteSuccess] = useState("");
+
+  const fetchCompanies = async () => {
+    setLoadingCompanies(true);
+    try {
+      const res = await fetch("/api/admin/companies");
+      const data = await res.json();
+      if (res.ok && data.companies) {
+        setCompaniesList(data.companies);
+        if (data.companies.length > 0 && !selectedCompanyId) {
+          setSelectedCompanyId(data.companies[0].id);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to fetch companies for dropdown", e);
+    } finally {
+      setLoadingCompanies(false);
+    }
+  };
+
+  const openInviteModal = () => {
+    setInviteError("");
+    setInviteSuccess("");
+    setIsInviteModalOpen(true);
+    fetchCompanies();
+  };
 
   const navItems = [
     {
@@ -61,12 +90,21 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
       return;
     }
 
+    if (inviteRole === "client_viewer" && !selectedCompanyId) {
+      setInviteError("Please select a client company for this client user.");
+      return;
+    }
+
     setIsInviting(true);
     try {
       const res = await fetch("/api/admin/invite-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: inviteEmail.trim() }),
+        body: JSON.stringify({ 
+          email: inviteEmail.trim(),
+          role: inviteRole,
+          company_id: inviteRole === "client_viewer" ? selectedCompanyId : null
+        }),
       });
 
       const data = await res.json();
@@ -82,6 +120,9 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
       setIsInviting(false);
     }
   };
+
+  const isAdmin = profileRole === "admin";
+  const isClientViewer = profileRole === "client_viewer";
 
   return (
     <>
@@ -128,21 +169,19 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
               </nav>
             </div>
 
-            {/* Invite Teammate Action */}
-            <div className="pt-2 border-t border-[#E3DBCF]">
-              <button
-                type="button"
-                onClick={() => {
-                  setInviteError("");
-                  setInviteSuccess("");
-                  setIsInviteModalOpen(true);
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider text-[#E05D38] bg-[#E05D38]/10 border border-[#E05D38]/20 hover:bg-[#E05D38] hover:text-white transition-all cursor-pointer shadow-sm group"
-              >
-                <UserPlus className="h-4.5 w-4.5 text-[#E05D38] group-hover:text-white transition-colors" />
-                Invite User
-              </button>
-            </div>
+            {/* Invite Teammate Action (Only for Admins / Evaluators) */}
+            {!isClientViewer && (
+              <div className="pt-2 border-t border-[#E3DBCF]">
+                <button
+                  type="button"
+                  onClick={openInviteModal}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider text-[#E05D38] bg-[#E05D38]/10 border border-[#E05D38]/20 hover:bg-[#E05D38] hover:text-white transition-all cursor-pointer shadow-sm group"
+                >
+                  <UserPlus className="h-4.5 w-4.5 text-[#E05D38] group-hover:text-white transition-colors" />
+                  Invite User
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -219,7 +258,7 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
             <form onSubmit={handleSendInvite} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
-                  Colleague Email Address
+                  User Email Address
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A6C62]" />
@@ -228,12 +267,55 @@ export default function SidebarNav({ profileName, profileRole }: SidebarNavProps
                     required
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="colleague@company.com"
+                    placeholder="user@company.com"
                     className="w-full bg-white border border-[#E3DBCF] rounded-xl py-2.5 pl-11 pr-4 text-xs font-semibold text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38] focus:ring-1 focus:ring-[#E05D38] transition-all shadow-sm"
                     disabled={isInviting}
                   />
                 </div>
               </div>
+
+              {/* Account Access Role */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
+                  Access Role
+                </label>
+                <select
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value as "evaluator" | "client_viewer")}
+                  className="w-full bg-white border border-[#E3DBCF] rounded-xl py-2.5 px-3 text-xs font-semibold text-[#2B231F] focus:outline-none focus:border-[#E05D38] focus:ring-1 focus:ring-[#E05D38] transition-all shadow-sm cursor-pointer"
+                  disabled={isInviting}
+                >
+                  <option value="evaluator">Internal Evaluator (Full Access)</option>
+                  <option value="client_viewer">Client Viewer (Restricted Company View)</option>
+                </select>
+              </div>
+
+              {/* Client Company Dropdown (Only when Role is Client Viewer) */}
+              {inviteRole === "client_viewer" && (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
+                    Assigned Client Company
+                  </label>
+                  {loadingCompanies ? (
+                    <div className="text-xs text-[#7A6C62] font-semibold animate-pulse py-2">Loading companies...</div>
+                  ) : companiesList.length === 0 ? (
+                    <div className="text-xs text-rose-600 font-semibold py-1">No client companies found. Create a client first.</div>
+                  ) : (
+                    <select
+                      value={selectedCompanyId}
+                      onChange={(e) => setSelectedCompanyId(e.target.value)}
+                      className="w-full bg-white border border-[#E3DBCF] rounded-xl py-2.5 px-3 text-xs font-semibold text-[#2B231F] focus:outline-none focus:border-[#E05D38] focus:ring-1 focus:ring-[#E05D38] transition-all shadow-sm cursor-pointer"
+                      disabled={isInviting}
+                    >
+                      {companiesList.map((comp) => (
+                        <option key={comp.id} value={comp.id}>
+                          {comp.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E3DBCF]">
                 <button
