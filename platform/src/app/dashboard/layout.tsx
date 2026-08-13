@@ -23,12 +23,16 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
+  const userEmail = (user.email || "").toLowerCase();
+  const isAdminEmail = ["goldenc5310@gmail.com", "pisurajc@gmail.com"].includes(userEmail);
+  const resolvedRole = isAdminEmail ? "admin" : (profile?.role || "evaluator");
+
   return (
     <div className="flex h-screen bg-[#FAF6EE] text-[#2B231F] overflow-hidden">
       {/* Sidebar Nav (Client Component) */}
       <SidebarNav
         profileName={profile?.full_name || user.email || "Evaluator"}
-        profileRole={profile?.role || "evaluator"}
+        profileRole={resolvedRole}
       />
 
       {/* Main Content Area */}

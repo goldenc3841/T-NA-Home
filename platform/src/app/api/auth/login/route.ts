@@ -35,12 +35,16 @@ export async function POST(request: Request) {
       .eq("id", data.user.id)
       .single();
 
+    const userEmail = (data.user.email || "").toLowerCase();
+    const isAdminEmail = ["goldenc5310@gmail.com", "pisurajc@gmail.com"].includes(userEmail);
+    const resolvedRole = isAdminEmail ? "admin" : (profile?.role || "evaluator");
+
     return NextResponse.json({
       token: data.session.access_token,
       user: {
         email: data.user.email,
         name: profile?.full_name || data.user.email,
-        role: profile?.role || "evaluator",
+        role: resolvedRole,
       },
     });
   } catch (err: unknown) {
