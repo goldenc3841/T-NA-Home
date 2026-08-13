@@ -3,13 +3,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Lock, KeyRound, AlertTriangle, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Lock, KeyRound, AlertTriangle, CheckCircle2, ArrowLeft, Mail, User } from "lucide-react";
 import Link from "next/link";
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
   const supabase = createClient();
 
+  const [userEmail, setUserEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +27,10 @@ export default function UpdatePasswordPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setHasSession(true);
+        if (session.user?.email) setUserEmail(session.user.email);
+        const nameParts = (session.user?.user_metadata?.full_name || "").split(" ");
+        if (nameParts[0]) setFirstName(nameParts[0]);
+        if (nameParts.length > 1) setLastName(nameParts.slice(1).join(" "));
       }
       setCheckingAuth(false);
     };
@@ -33,6 +40,10 @@ export default function UpdatePasswordPage() {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "PASSWORD_RECOVERY" || session) {
         setHasSession(true);
+        if (session?.user?.email) setUserEmail(session.user.email);
+        const nameParts = (session?.user?.user_metadata?.full_name || "").split(" ");
+        if (nameParts[0]) setFirstName(nameParts[0]);
+        if (nameParts.length > 1) setLastName(nameParts.slice(1).join(" "));
       }
       setCheckingAuth(false);
     });
@@ -48,6 +59,12 @@ export default function UpdatePasswordPage() {
     setErrorMsg("");
     setSuccessMsg("");
 
+    if (!firstName.trim() || !lastName.trim()) {
+      setErrorMsg("First name and last name are required.");
+      setIsLoading(false);
+      return;
+    }
+
     if (password.length < 6) {
       setErrorMsg("Password must be at least 6 characters long.");
       setIsLoading(false);
@@ -61,21 +78,34 @@ export default function UpdatePasswordPage() {
     }
 
     try {
+      const fullName = `${firstName.trim()} ${lastName.trim()}`;
       const { error } = await supabase.auth.updateUser({
         password: password.trim(),
+        data: {
+          full_name: fullName,
+        },
       });
 
       if (error) {
         throw error;
       }
 
-      setSuccessMsg("Password updated successfully! Redirecting to dashboard...");
+      // Also update public profiles table
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("profiles")
+          .update({ full_name: fullName })
+          .eq("id", user.id);
+      }
+
+      setSuccessMsg("Account configured successfully! Redirecting to dashboard...");
       setTimeout(() => {
         router.push("/dashboard");
       }, 1500);
     } catch (err: unknown) {
       const error = err as Error;
-      setErrorMsg(error.message || "Failed to update password.");
+      setErrorMsg(error.message || "Failed to configure account.");
       setIsLoading(false);
     }
   };
@@ -88,14 +118,14 @@ export default function UpdatePasswordPage() {
 
       <div className="w-full max-w-md bg-[#FAF6EE] rounded-2xl border border-[#E3DBCF] p-8 shadow-xl relative z-10">
         <div className="flex flex-col items-center mb-8">
-          <div className="h-12 w-12 rounded-xl bg-[#E05D38] flex items-center justify-center text-white shadow-lg shadow-[#E05D38]/25 mb-4">
-            <KeyRound className="h-6 w-6" />
+          <div className="h-12 w-12 rounded-xl bg-[#E05D38] flex items-center justify-center text-white shadow-lg shadow-[#E05D38]/25 mb-4 font-bold text-xl">
+            T
           </div>
           <h1 className="text-2xl font-serif font-bold text-[#2B231F]">
-            Set New Password
+            Complete Your Account Setup
           </h1>
           <p className="text-xs text-[#7A6C62] font-semibold mt-1.5 text-center">
-            Enter your new password below to update your account credentials
+            Enter your name and password to activate your TNA Home account
           </p>
         </div>
 
@@ -115,12 +145,12 @@ export default function UpdatePasswordPage() {
 
         {checkingAuth ? (
           <div className="p-8 text-center text-xs text-[#7A6C62] font-semibold animate-pulse">
-            Verifying password reset request...
+            Verifying invitation request...
           </div>
         ) : !hasSession ? (
           <div className="text-center space-y-4 py-4">
             <p className="text-xs text-rose-700 font-semibold bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl">
-              Invalid or expired password reset link. Please request a new link from the login page.
+              Invalid or expired invitation link. Please ask your administrator to send a new invitation.
             </p>
             <Link
               href="/login"
@@ -131,8 +161,64 @@ export default function UpdatePasswordPage() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Pre-filled Email Address (Read-only / Cannot be edited) */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A6C62]" />
+                <input
+                  type="email"
+                  value={userEmail}
+                  disabled
+                  readOnly
+                  className="w-full bg-[#EAE3D6]/50 border border-[#E3DBCF] rounded-xl py-2.5 pl-11 pr-4 text-xs font-semibold text-[#7A6C62] cursor-not-allowed shadow-inner"
+                />
+              </div>
+            </div>
+
+            {/* First Name & Last Name Fields */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
+                  First Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A6C62]" />
+                  <input
+                    type="text"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Jane"
+                    className="w-full bg-white border border-[#E3DBCF] rounded-xl py-2.5 pl-11 pr-4 text-xs font-semibold text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38] focus:ring-1 focus:ring-[#E05D38] transition-all shadow-sm"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
+                  Last Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A6C62]" />
+                  <input
+                    type="text"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Smith"
+                    className="w-full bg-white border border-[#E3DBCF] rounded-xl py-2.5 pl-11 pr-4 text-xs font-semibold text-[#2B231F] placeholder-[#7A6C62] focus:outline-none focus:border-[#E05D38] focus:ring-1 focus:ring-[#E05D38] transition-all shadow-sm"
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Password Field */}
+            <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
                 New Password
               </label>
@@ -150,9 +236,10 @@ export default function UpdatePasswordPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
+            {/* Confirm Password Field */}
+            <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A6C62]">
-                Confirm New Password
+                Confirm Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7A6C62]" />
@@ -173,7 +260,7 @@ export default function UpdatePasswordPage() {
               disabled={isLoading}
               className="w-full mt-2 py-3 rounded-xl bg-[#E05D38] hover:bg-[#C54824] text-white font-bold text-xs uppercase tracking-wider cursor-pointer shadow-md shadow-[#E05D38]/20 transition-all flex items-center justify-center gap-2"
             >
-              {isLoading ? "Updating Password..." : "Update Password"}
+              {isLoading ? "Activating Account..." : "Create Account"}
             </button>
           </form>
         )}
