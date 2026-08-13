@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     // 3. Generate Single-Use Valid Invitation Link and User Account
     const origin = new URL(request.url).origin;
     const inviteOptions = {
-      redirectTo: `${origin}/auth/callback?next=/update-password`,
+      redirectTo: `${origin}/update-password`,
       data: {
         full_name: targetEmail,
         role: role,

@@ -39,6 +39,23 @@ export default function UpdatePasswordPage() {
     };
 
     const checkSession = async () => {
+      // 1. Check if URL contains auth code parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
+      if (code) {
+        try {
+          const { data: codeData } = await supabase.auth.exchangeCodeForSession(code);
+          if (codeData?.session) {
+            handleSessionData(codeData.session);
+            setCheckingAuth(false);
+            return;
+          }
+        } catch (e) {
+          console.error("Error exchanging code for session:", e);
+        }
+      }
+
+      // 2. Check active session
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         handleSessionData(session);
@@ -49,8 +66,10 @@ export default function UpdatePasswordPage() {
     checkSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "PASSWORD_RECOVERY" || session) {
-        handleSessionData(session);
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN" || event === "INITIAL_SESSION" || session) {
+        if (session) {
+          handleSessionData(session);
+        }
       }
       setCheckingAuth(false);
     });
